@@ -12,7 +12,7 @@ Backend cho **Hệ thống quản lý và đặt sân bóng**, xây dựng theo 
 ## 1. Project Overview
 Hệ thống cho phép người dùng tìm và đặt sân bóng, chủ sân (Owner) quản lý sân và
 xác nhận đơn đặt, quản trị viên (Admin) quản lý toàn hệ thống và xem thống kê.
-Backend cung cấp **RESTful API** cho Frontend **Next.js**.
+Backend cung cấp **RESTful API** cho Frontend **React 18 + Vite**.
 
 Luồng kiến trúc theo tài liệu học phần:
 
@@ -24,7 +24,7 @@ Business Function → Service → REST API → HTTP Request
 ## 2. Technology Stack
 - Java 17, Spring Boot 3.3.5, Maven
 - Spring Web, Spring Data JPA (Hibernate), Spring Validation
-- Spring Security + JWT *(từ Phase 2)*
+- Spring Security + JWT
 - MySQL 8 (production) / H2 in-memory (test)
 - OpenAPI / Swagger (springdoc)
 - JUnit 5, Mockito, Spring Boot Test
@@ -51,13 +51,12 @@ football-booking-backend/
 │   ├── dto/            # Request/Response DTO (auth,user,field,booking,review,admin)
 │   ├── mapper/         # Chuyển đổi Entity <-> DTO
 │   ├── exception/      # Exception + GlobalExceptionHandler
-│   ├── security/       # JWT filter, JwtService (Phase 2)
+│   ├── security/       # JWT filter, JwtService, kiểm tra quyền
 │   ├── enums/          # Role, Status...
 │   └── FootballBookingApplication.java
 ├── src/main/resources/ # application.yml, application-dev.yml
 ├── src/test/           # Unit + Integration test
 ├── docs/               # Tài liệu chi tiết
-├── PHANCONG.md         # Phân công nhóm 4 người
 ├── pom.xml
 └── README.md
 ```
@@ -75,7 +74,7 @@ Tài liệu API: [docs/api.md](docs/api.md) và Swagger UI (mục 11). Các nhó
 
 ## 7. Authentication
 Đăng ký/đăng nhập trả JWT; Frontend gửi kèm header `Authorization: Bearer <JWT>`.
-Chi tiết: [docs/authentication.md](docs/authentication.md) *(triển khai ở Phase 2)*.
+Chi tiết: [docs/authentication.md](docs/authentication.md).
 
 ## 8. Authorization
 Ba vai trò: `USER`, `OWNER`, `ADMIN`. Ngoài kiểm tra vai trò còn kiểm tra
@@ -104,7 +103,9 @@ Các biến (đều có giá trị mặc định cho dev nếu thiếu):
 | `DB_URL` | (Tùy chọn) Full JDBC URL | Tự ghép từ `DB_HOST, DB_PORT, DB_NAME` |
 | `SERVER_PORT` | Cổng chạy ứng dụng | `8080` |
 | `SPRING_PROFILES_ACTIVE` | Profile | `dev` |
-| `JWT_SECRET` | Khóa ký JWT | *(bắt buộc từ Phase 2)* |
+| `JWT_SECRET` | Khóa ký JWT (tối thiểu 32 ký tự) | *(bắt buộc đặt ở môi trường thật)* |
+| `JWT_EXPIRATION_MS` | Thời hạn token, tính bằng mili-giây | `86400000` (24 giờ) |
+| `CORS_ALLOWED_ORIGINS` | Origin của Frontend, nhiều origin cách nhau bằng dấu phẩy | `http://localhost:3000` — **đặt `http://localhost:5173` khi chạy Frontend bằng Vite** |
 
 ## 10. How to Run
 Yêu cầu: Java 17, Maven, MySQL 8 đang chạy.
@@ -138,8 +139,9 @@ Sau khi chạy ứng dụng:
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-## 12. Postman
-Collection Postman sẽ được bổ sung khi các API nghiệp vụ hoàn thiện (Phase 7).
+## 12. Test API bằng tay
+Chưa có Postman collection. Hướng dẫn gọi thử từng endpoint (Swagger UI / Postman / curl) kèm
+request–response mẫu: **[readapi.md](readapi.md)**.
 
 ## 13. Testing
 ```bash
@@ -150,11 +152,8 @@ Bao phủ: booking (tính tiền, trùng lịch, field không tồn tại/inacti
 đăng ký/đăng nhập, phân quyền 401/403, validation 400. Chi tiết: [docs/testing.md](docs/testing.md).
 
 ## 14. Git Workflow
-`main` (phát hành) ← `develop` (tích hợp) ← `feature/*`. Xem [PHANCONG.md](PHANCONG.md) mục 7–8.
+`main` (phát hành) ← `develop` (tích hợp) ← `feature/*`.
 
 ## 15. Alibaba Open Code Review
 Dự án dùng [alibaba/open-code-review](https://github.com/alibaba/open-code-review) (`ocr`)
 để review tự động. Cách cài đặt, cấu hình, cách chạy và báo cáo: [docs/code-review.md](docs/code-review.md).
-
-## 16. Team Assignment
-Phân công 4 thành viên: [PHANCONG.md](PHANCONG.md).

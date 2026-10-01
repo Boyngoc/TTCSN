@@ -4,6 +4,10 @@ Dự án dùng công cụ chính thức **[alibaba/open-code-review](https://git
 (lệnh `ocr`) để review tự động. Tài liệu này ghi lại cách cài đặt/cấu hình/chạy **đã kiểm chứng thực tế**
 trên máy dự án, cùng báo cáo review cho từng Phase.
 
+> **Đây là biên bản lịch sử.** Các mục "Báo cáo review" dưới đây ghi lại tình trạng mã nguồn tại
+> thời điểm chạy công cụ, theo từng mốc (Phase) của quá trình phát triển — **không phải trạng thái
+> hiện tại** của dự án. Trạng thái hiện tại xem [../../README.md](../../README.md).
+
 ## 1. Công cụ (đã xác minh)
 - Repo: https://github.com/alibaba/open-code-review · License: Apache-2.0
 - Cài qua npm: package `@alibaba-group/open-code-review`, cung cấp lệnh `ocr`

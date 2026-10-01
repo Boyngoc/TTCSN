@@ -1,145 +1,210 @@
-Yêu cầu hệ thống quản lý đặt lịch sân bóng đá (QLSB)
-Trạng thái: BẢN NHÁP để review. Chưa được duyệt. Đề tài: Xây dựng và phát triển hệ thống quản lý đặt lịch sân bóng đá.
+# Hệ thống quản lý và đặt sân bóng (Football Booking)
 
-1. Tổng quan
-1.1 Mục đích
-Website dành cho một chủ cơ sở sân bóng vận hành trực tiếp. Khách xem sân, tra lịch trống và đặt sân online. Chủ sân duyệt đơn, quản lý sân/giá và xem doanh thu.
+Đồ án môn **Phát triển phần mềm hướng dịch vụ (SOA)**. Hệ thống cho phép người dùng tìm và đặt
+sân bóng trực tuyến, chủ sân quản lý sân của mình và duyệt đơn đặt, quản trị viên quản lý toàn
+hệ thống và xem thống kê.
 
-1.2 Phạm vi
-Đăng ký/đăng nhập, quản lý sân / loại sân / khung giờ / bảng giá, đặt và hủy sân, quản lý booking, quản lý khách hàng, dashboard thống kê.
+## 1. Trạng thái dự án
 
-1.3 Ngoài phạm vi (bản đầu)
-Thanh toán online qua cổng thanh toán (chỉ hiển thị hướng dẫn chuyển khoản / QR tĩnh)
-Nhiều cơ sở / chi nhánh
-Gửi email / SMS
-Ứng dụng mobile native
-2. Vai trò
-Vai trò	Quyền chính
-CUSTOMER	Xem sân, tra lịch trống, đặt sân, xem lịch sử, hủy sân theo quy định, sửa hồ sơ, đổi mật khẩu
-ADMIN	Dashboard, CRUD sân / loại sân / khung giờ, duyệt / hủy / hoàn thành booking, đặt sân hộ khách, quản lý khách hàng
-3. Luồng nghiệp vụ
-Khách đăng ký / đăng nhập → chọn sân → chọn ngày → xem lưới khung giờ (xanh: trống, xám/đỏ: đã đặt).
-Khách chọn giờ, ghi chú, xác nhận → booking PENDING (đã giữ chỗ), hệ thống hiển thị hướng dẫn chuyển khoản.
-Admin duyệt (CONFIRMED) hoặc hủy (CANCELLED).
-Sau giờ đá, admin đánh dấu COMPLETED (tính vào doanh thu).
-Khách được hủy trước giờ đá tối thiểu N giờ (mặc định N = 24, cấu hình được).
-Khách gọi điện hoặc đến trực tiếp → admin đặt hộ (direct).
-4. Yêu cầu chức năng
-4.1 Xác thực & phân quyền
-FR-01: Đăng ký (họ tên, email, SĐT, mật khẩu ≥ 8 ký tự). Role mặc định CUSTOMER.
-FR-02: Đăng nhập, đăng xuất, lấy thông tin hiện tại (/me). Tài khoản is_active = false không đăng nhập được.
-FR-03: Chặn CUSTOMER truy cập tài nguyên ADMIN (403). Chưa đăng nhập trả 401.
-4.2 Sân & khung giờ
-FR-04: Danh sách sân, lọc theo loại sân, trạng thái, khoảng giá. Xem chi tiết sân.
-FR-05: Admin CRUD loại sân (Sân 5 / 7 / 11) và sân con (tên, loại, trạng thái ACTIVE / MAINTENANCE, giá/giờ).
-FR-06: Admin CRUD khung giờ (06:00–23:00, mỗi ca 1 giờ, hệ số giá hoặc giá riêng). Không được xóa khung giờ / sân đã có booking (chuyển sang vô hiệu hóa).
-FR-07: GET availability trả ma trận trạng thái từng khung giờ theo sân + ngày.
-4.3 Đặt sân (cốt lõi)
-FR-08: Khách tạo booking cho 1 sân, 1 ngày, gồm 1 hoặc nhiều khung giờ liên tiếp. Không được đặt ngày/giờ đã qua, không quá 30 ngày tới, không đặt sân đang bảo trì.
-FR-09: Không bao giờ trùng lịch: hai booking đang hoạt động (PENDING / CONFIRMED / COMPLETED) không được chồng lấn cùng sân + ngày + giờ, kể cả khi hai người bấm cùng lúc. Trùng thì trả 409 Conflict.
-FR-10: Tổng tiền = Σ (giá sân/giờ × hệ số hoặc giá riêng của từng khung giờ), tính ở server.
-FR-11: Khách xem lịch sử đặt chỗ, hủy booking khi còn ≥ N giờ. Hủy xong khung giờ được giải phóng ngay.
-FR-12: Admin xem tất cả booking (lọc theo ngày, sân, trạng thái), đổi trạng thái theo bảng chuyển hợp lệ, đặt hộ khách (khách có tài khoản hoặc khách vãng lai: tên + SĐT).
-4.4 Khách hàng & hồ sơ
-FR-13: Khách sửa họ tên, SĐT, đổi mật khẩu (nhập mật khẩu cũ).
-FR-14: Admin xem danh sách khách, tìm kiếm, khóa / mở tài khoản, xem lịch sử đặt của từng khách.
-4.5 Thống kê
-FR-15: Dashboard: doanh thu hôm nay / tháng, số đơn mới, số sân đang sử dụng, tỷ lệ lấp đầy, biểu đồ doanh thu theo ngày / tháng, bảng booking gần nhất.
-5. Quy tắc nghiệp vụ
-Mã	Quy tắc
-BR-01	Chuyển trạng thái hợp lệ: PENDING→CONFIRMED, PENDING→CANCELLED, CONFIRMED→CANCELLED, CONFIRMED→COMPLETED. Các chuyển khác bị từ chối.
-BR-02	Booking CANCELLED không chiếm chỗ. Chỉ COMPLETED tính doanh thu.
-BR-03	Khách chỉ hủy được booking PENDING / CONFIRMED của chính mình, trước giờ đá ≥ N giờ. Admin hủy không bị giới hạn.
-BR-04	Mọi mốc thời gian theo múi giờ Asia/Ho_Chi_Minh.
-BR-05	Mật khẩu luôn hash bcrypt, không bao giờ trả về qua API.
-BR-06	Giá tại thời điểm đặt được lưu vào booking, đổi giá sau đó không ảnh hưởng đơn cũ.
-6. Giao diện
-Khách hàng: Trang chủ / danh sách sân (bộ lọc) → Chi tiết sân + DatePicker + lưới khung giờ → Modal xác nhận (tóm tắt, ghi chú, tổng tiền, QR VietQR minh họa) → Lịch sử đặt (badge trạng thái, nút "Hủy sân" có dialog xác nhận) → Hồ sơ → Đăng ký / Đăng nhập.
+| Thành phần | Trạng thái | Ghi chú |
+|---|---|---|
+| Backend REST API | ✅ Hoàn thiện | Spring Boot, 23 test unit/integration (`mvn test`) |
+| Cơ sở dữ liệu | ✅ Hoàn thiện | MySQL 8, 6 bảng, có script SQL import tay |
+| Tài liệu API | ✅ Hoàn thiện | Swagger UI + tài liệu markdown |
+| Frontend | 🚧 Chưa triển khai | Thư mục `Frontend/` hiện chỉ là chỗ đặt code |
 
-Admin: Layout riêng (Sidebar + Topbar), Dashboard, Quản lý sân & khung giờ, Master Calendar / Timeline (mọi sân theo ngày), Quản lý booking, Quản lý khách hàng.
+## 2. Công nghệ
 
-UX chung: responsive, loading (spinner / skeleton), toast, trạng thái lỗi (không trắng trang).
+| Tầng | Công nghệ |
+|---|---|
+| Backend | Java 17, Spring Boot 3.3.5, Spring Web, Spring Data JPA (Hibernate), Spring Validation |
+| Bảo mật | Spring Security + JWT (jjwt 0.12.6), BCrypt |
+| Cơ sở dữ liệu | MySQL 8 (chạy thật) / H2 in-memory (test) |
+| Tài liệu API | springdoc-openapi (Swagger UI) |
+| Kiểm thử | JUnit 5, Mockito, Spring Boot Test (MockMvc) |
+| Frontend (dự kiến) | React 18 + Vite 5, React Router, TanStack Query, Axios, Tailwind CSS |
+| Build | Maven |
 
-7. Yêu cầu phi chức năng
-Chống race condition (xem technical_architecture.md, mục 5).
-Validate cả client (Zod) và server (class-validator). Lỗi API trả cùng một cấu trúc.
-Chạy bằng Docker Compose, seed tự động và chạy lặp lại được (idempotent).
-Có test tự động cho luồng đặt sân và test đồng thời.
-8. Mô hình dữ liệu
-User(id, email UQ, phone, password_hash, full_name, role, is_active, created_at)
-FieldType(id, name UQ, description)
-FootballField(id, field_type_id FK, name UQ, status, price_per_hour, description, image_url)
-TimeSlot(id, start_time, end_time, price_multiplier, custom_price?, is_active)   UQ(start_time, end_time)
-Booking(id, user_id FK?, guest_name?, guest_phone?, field_id FK, booking_date,
-        start_time, end_time, total_price, status, note, created_by FK, created_at)
-BookingSlot(id, booking_id FK, field_id, booking_date, time_slot_id FK,
-            active_key TINYINT NULL)     UQ(field_id, booking_date, time_slot_id, active_key)
-Booking.user_id cho phép NULL để hỗ trợ khách vãng lai do admin đặt hộ.
+## 3. Cấu trúc repository
 
-9. API (tóm tắt)
-Nhóm	Endpoint
-Auth	POST /api/auth/register, /login, /logout, GET /api/auth/me
-Public	GET /api/fields, /api/fields/:id, /api/field-types, /api/time-slots, /api/availability?field_id=&date=
-Customer	POST /api/bookings, GET /api/bookings/my-history, PATCH /api/bookings/:id/cancel, PATCH /api/users/me, PATCH /api/users/me/password
-Admin	CRUD /api/admin/fields, /api/admin/field-types, /api/admin/time-slots; GET /api/admin/bookings; PATCH /api/admin/bookings/:id/status; POST /api/admin/bookings/direct; GET /api/admin/customers, /api/admin/customers/:id/bookings, PATCH /api/admin/customers/:id/active; GET /api/admin/statistics
-10. Tiêu chí nghiệm thu chính
-Đăng ký → đăng nhập → /me thành công. Customer gọi API admin nhận 403.
-Đặt slot trống thành công. Đặt lại đúng slot đó nhận 409, không sinh bản ghi trùng.
-20 request đặt cùng slot đồng thời: đúng 1 thành công, 19 nhận 409.
-Hủy trước giờ đá < N giờ bị từ chối. Hủy hợp lệ giải phóng slot.
-Dashboard hiển thị số liệu khớp với dữ liệu seed.
-11. Câu hỏi mở (cần người review cho ý kiến)
-Đăng nhập bằng email + mật khẩu (thay vì username / SĐT). Đồng ý không?
-Đơn mới ở trạng thái PENDING và giữ chỗ ngay, admin duyệt sau. Hay tự CONFIRMED?
-N mặc định = 24 giờ, giới hạn đặt trước tối đa 30 ngày. Có muốn đổi không?
-Một booking được đặt nhiều khung giờ liên tiếp, hay chỉ 1 khung giờ mỗi đơn?
-PENDING quá lâu không được duyệt có tự hủy sau X phút không? (Đề xuất: chưa làm ở bản đầu.)
-------------------------------------------------------------------------------------------------
-Technical Architecture: Hệ thống đặt lịch sân bóng đá (QLSB)
-Trạng thái: BẢN NHÁP để review. Chưa được duyệt. Môi trường: Docker, chạy localhost, hệ thống nội bộ cho một cơ sở sân bóng.
+```
+TTCSN/
+├── Backend/            # Spring Boot REST API (đã hoàn thiện)
+│   ├── src/main/java/com/example/footballbooking/
+│   ├── src/main/resources/     # application.yml, application-dev.yml
+│   ├── src/test/               # 23 test trên H2
+│   ├── docs/                   # tài liệu chi tiết + database.sql
+│   ├── readapi.md              # hướng dẫn test từng endpoint
+│   └── README.md               # hướng dẫn cài đặt & chạy backend
+├── Frontend/           # chưa có code
+└── README.md           # tài liệu tổng quan (file này)
+```
 
-1. Công nghệ (giữ stack hiện có của repo)
-Tầng	Công nghệ
-Frontend	React 18 + Vite 5, React Router 6, TanStack Query 5, Axios, React Hook Form + Zod, Tailwind CSS 3
-Backend	Node 20, NestJS 10, Prisma 5, @nestjs/jwt (không Passport), bcrypt (cost 12), class-validator, Swagger (/api/docs)
-Database	MySQL 8.0 (InnoDB, REPEATABLE READ)
-Hạ tầng	Docker Compose: mysql, backend, frontend
-Biểu đồ doanh thu dùng SVG / Tailwind tự vẽ, không thêm thư viện. Repo đang cấm thêm thư viện ngoài danh sách trên.
+## 4. Vai trò và quyền
 
-2. Cấu trúc thư mục
-backend/src/{auth,users,field-types,fields,time-slots,availability,bookings,statistics,common}
-backend/prisma/{schema.prisma,migrations,seed.ts}
-frontend/src/{pages/{customer,admin},components/{layout,ui},hooks,lib,schemas,types}
-docker-compose.yml   docs/   specs/
-3. Xác thực & phân quyền
-Access token 1h, refresh token 7d, lưu trong cookie HttpOnly (SameSite=Lax). Đăng xuất xóa cookie.
-JwtAuthGuard xác thực. RolesGuard + @Roles('ADMIN') phân quyền. Mọi route /api/admin/* bắt buộc ADMIN.
-Định danh đăng nhập: email + mật khẩu (SĐT là thông tin hồ sơ bắt buộc).
-4. Quy ước API
-Tiền tố /api.
-Lỗi trả dạng { statusCode, error, message, details? }.
-Mã dùng: 400 validate, 401, 403, 404, 409 trùng lịch, 422 vi phạm quy tắc nghiệp vụ (ví dụ hủy quá hạn).
-Phân trang ?page=&pageSize= cho danh sách admin.
-5. Chống trùng lịch (thiết kế cốt lõi)
-Dùng ba lớp bảo vệ:
+| Vai trò | Quyền chính |
+|---|---|
+| `USER` | Tìm/xem sân, tạo đơn đặt sân, xem và hủy đơn của mình, đánh giá sân đã đặt, sửa hồ sơ |
+| `OWNER` | Quản lý (CRUD) sân của chính mình, xem đơn đặt vào sân của mình, xác nhận / từ chối đơn |
+| `ADMIN` | Xem toàn bộ user / chủ sân / sân / đơn đặt, khóa-mở tài khoản, bật-tắt sân, xem thống kê |
 
-Transaction + khóa bi quan. Trong prisma.$transaction, chạy SELECT id FROM football_field WHERE id = ? FOR UPDATE. Việc này tuần tự hóa mọi đặt chỗ của cùng một sân, còn sân khác vẫn chạy song song.
-Kiểm tra nghiệp vụ trong khóa: sân tồn tại, ACTIVE, ngày / giờ hợp lệ, các slot liên tiếp, chưa có BookingSlot hoạt động nào trùng. Nếu trùng thì rollback và trả 409.
-Ràng buộc DB làm chốt chặn cuối. Bảng BookingSlot có UNIQUE(field_id, booking_date, time_slot_id, active_key). active_key = 1 khi booking đang hoạt động và NULL khi bị hủy. MySQL coi NULL là khác nhau nên slot của đơn đã hủy không chặn đặt lại. Lỗi P2002 của Prisma được ánh xạ thành 409.
-Mỗi booking sinh các dòng BookingSlot tương ứng. Khi hủy thì đặt active_key = NULL. Cách này tránh phải xử lý khoảng thời gian chồng lấn phức tạp, vì MySQL không có exclusion constraint.
+Đăng ký qua API luôn tạo tài khoản `USER`. Tài khoản `OWNER` và `ADMIN` chỉ được tạo bằng
+dữ liệu mẫu (profile `dev`) hoặc thao tác trực tiếp trong cơ sở dữ liệu.
 
-6. Tính giá và múi giờ
-Server tính total_price và lưu vào booking (BR-06).
-booking_date là kiểu DATE, giờ là TIME. So sánh "trước giờ đá N giờ" tính theo Asia/Ho_Chi_Minh (TZ được đặt trong Docker).
-7. Seed (idempotent, dùng upsert)
-1 Admin, 2 Customer.
-3 loại sân (5 / 7 / 11) và 4 sân con (2 sân 5, 1 sân 7, 1 sân 11).
-Khung giờ 06:00–23:00, mỗi ca 1 giờ, giờ cao điểm 17:00–21:00 hệ số 1.5.
-Vài booking mẫu ở các trạng thái khác nhau (không trùng lịch).
-Tài khoản và mật khẩu dùng thử hardcode trong seed và ghi trong README.
-8. Docker và cấu hình
-Giữ chính sách "không dùng .env, hardcode trong docker-compose.yml" như tài liệu của dự án trước.
-Backend khởi động: prisma migrate deploy → prisma db seed → start:dev.
-9. Kiểm thử
-Backend: Jest, gồm unit test tính giá và chuyển trạng thái, và integration test luồng đặt sân, kể cả test đồng thời (Promise.all 20 request → đúng 1 thành công).
-Chạy lint, type-check và build cả hai phía trước khi báo hoàn thành.
+## 5. Luồng nghiệp vụ
+
+1. Người dùng **đăng ký** (`USER`) rồi **đăng nhập**, nhận về JWT và gửi kèm header
+   `Authorization: Bearer <token>` cho các request cần xác thực.
+2. Tìm sân theo từ khóa / địa chỉ / loại sân / khoảng giá, xem chi tiết và đánh giá của sân.
+3. **Tạo đơn đặt sân**: chọn sân, ngày, giờ bắt đầu – giờ kết thúc. Đơn được tạo ở trạng thái
+   `PENDING`, backend tự tính tổng tiền và tạo kèm một bản ghi thanh toán `PENDING` (mặc định `CASH`).
+4. **Chủ sân** xem đơn vào sân của mình rồi **xác nhận** (`CONFIRMED`, thanh toán chuyển `PAID`)
+   hoặc **từ chối** (`REJECTED`).
+5. Người đặt có thể **hủy** đơn của mình khi đơn còn `PENDING` hoặc `CONFIRMED`
+   (`CANCELLED`; nếu đã `PAID` thì thanh toán chuyển `REFUNDED`).
+6. Với đơn `CONFIRMED` hoặc `COMPLETED`, người đặt được **đánh giá** sân một lần (1–5 sao).
+7. **Admin** theo dõi toàn hệ thống và xem thống kê tổng hợp.
+
+## 6. Quy tắc nghiệp vụ đang áp dụng
+
+| Mã | Quy tắc |
+|---|---|
+| BR-01 | Chuyển trạng thái hợp lệ: `PENDING`→`CONFIRMED` / `REJECTED` (chủ sân), `PENDING`/`CONFIRMED`→`CANCELLED` (người đặt). Chuyển khác bị từ chối (409). |
+| BR-02 | Chỉ đơn `PENDING` và `CONFIRMED` giữ chỗ khung giờ. Đơn `CANCELLED` / `REJECTED` không chiếm chỗ. |
+| BR-03 | Không cho trùng lịch: hai đơn đang giữ chỗ không được chồng lấn cùng sân + ngày. Trùng thì trả **409**. Cơ chế: khóa bi quan dòng sân (`PESSIMISTIC_WRITE`) trong transaction, rồi kiểm tra chồng lấn `start < :end AND end > :start`. |
+| BR-04 | Tổng tiền = `price_per_hour` × số giờ, **tính ở server**, không tin giá do client gửi. |
+| BR-05 | Không nhận đặt sân ở trạng thái `INACTIVE`; không đặt ngày quá khứ; nếu đặt trong hôm nay thì giờ bắt đầu phải ở tương lai. |
+| BR-06 | Mật khẩu luôn hash BCrypt, không bao giờ trả về qua API. |
+| BR-07 | Ngoài kiểm tra vai trò còn kiểm tra **quyền sở hữu tài nguyên** ở tầng Service (chống IDOR): chủ sân chỉ tác động lên sân/đơn của mình, người đặt chỉ xem/hủy đơn của mình. |
+| BR-08 | Mỗi đơn đặt chỉ được đánh giá một lần, và chỉ khi đơn đã `CONFIRMED` hoặc `COMPLETED`. |
+| BR-09 | Không xóa được sân đã có lượt đặt (409) — chuyển sang `INACTIVE` thay vì xóa. |
+
+## 7. Mô hình dữ liệu
+
+Sáu bảng: `users`, `field_types`, `fields`, `bookings`, `reviews`, `payments`.
+
+```
+User  1───N  Booking          Owner(User) 1───N  Field
+User  1───N  Review           FieldType   1───N  Field
+Field 1───N  Booking          Field       1───N  Review
+Booking 1───1 Payment
+```
+
+Các tập giá trị enum:
+
+- `Role`: `USER`, `OWNER`, `ADMIN`
+- `UserStatus`: `ACTIVE`, `INACTIVE`, `BLOCKED`
+- `ActiveStatus` (sân, loại sân): `ACTIVE`, `INACTIVE`
+- `BookingStatus`: `PENDING`, `CONFIRMED`, `CANCELLED`, `REJECTED`, `COMPLETED`
+- `PaymentMethod`: `CASH`, `BANK_TRANSFER` — `PaymentStatus`: `PENDING`, `PAID`, `FAILED`, `REFUNDED`
+
+Chi tiết từng cột, khóa ngoại và script SQL: **[Backend/docs/database.md](Backend/docs/database.md)**.
+
+## 8. API
+
+Tiền tố `/api`. Mọi phản hồi bọc trong `ApiResponse<T>` (trừ `/api/health`):
+
+```json
+{ "status": 200, "message": "Thành công", "data": {} }
+```
+
+Lỗi trả `{ "status", "message", "timestamp" }`, kèm `errors` theo từng trường khi lỗi validation.
+Mã dùng: `200` `201` `204` `400` `401` `403` `404` `409` `500`.
+
+| Nhóm | Endpoint | Quyền |
+|---|---|---|
+| Health | `GET /api/health` | Public |
+| Auth | `POST /api/auth/register`, `POST /api/auth/login` | Public |
+| User | `GET /api/users/me`, `PUT /api/users/me` | Đã đăng nhập |
+| FieldType | `GET /api/field-types` | Public |
+| Field | `GET /api/fields`, `GET /api/fields/{id}` | Public |
+| Field | `POST /api/fields`, `PUT`/`DELETE /api/fields/{id}` | `OWNER`/`ADMIN` + chủ sở hữu |
+| Owner Field | `GET`/`POST /api/owner/fields`, `PUT`/`DELETE /api/owner/fields/{id}` | `OWNER` (chủ sở hữu) |
+| Booking | `POST /api/bookings`, `GET /api/bookings/my`, `GET /api/bookings/{id}`, `POST /api/bookings/{id}/cancel` | Đã đăng nhập |
+| Owner Booking | `GET /api/owner/bookings`, `POST /api/owner/bookings/{id}/confirm`, `.../reject` | `OWNER` (chủ sân) |
+| Review | `POST /api/reviews`, `GET /api/fields/{id}/reviews` | Tạo: đã đăng nhập · Xem: public |
+| Admin | `GET /api/admin/users\|owners\|fields\|bookings\|statistics`, `PUT /api/admin/users/{id}/status`, `PUT /api/admin/fields/{id}/status` | `ADMIN` |
+
+Tham số tìm kiếm sân: `keyword`, `address`, `fieldType`, `minPrice`, `maxPrice`, `page`, `size`.
+Thống kê trả về: `totalUsers`, `totalOwners`, `totalFields`, `totalBookings`,
+`bookingsByStatus`, `totalRevenue` (tổng tiền các đơn `CONFIRMED` + `COMPLETED`).
+
+Tài liệu đầy đủ: **[Backend/docs/api.md](Backend/docs/api.md)** · hướng dẫn test từng endpoint:
+**[Backend/readapi.md](Backend/readapi.md)** · Swagger UI: `http://localhost:8080/swagger-ui.html`.
+
+## 9. Cách chạy
+
+Yêu cầu: **Java 17+**, **Maven**, **MySQL 8** đang chạy.
+
+```bash
+cd Backend
+cp .env.example .env     # sửa DB_USERNAME / DB_PASSWORD cho khớp máy bạn
+mvn spring-boot:run
+```
+
+Kiểm tra: `curl http://localhost:8080/api/health` → `{"status":"UP","service":"Football Booking Service"}`
+
+Cấu hình đọc từ `.env` hoặc biến môi trường hệ điều hành (xem bảng đầy đủ trong
+[Backend/README.md](Backend/README.md) mục 9). Khi làm Frontend bằng Vite, nhớ mở CORS cho cổng của Vite:
+
+```bash
+CORS_ALLOWED_ORIGINS=http://localhost:5173
+```
+
+Chạy với profile `dev` (mặc định), hệ thống tự tạo dữ liệu mẫu — 3 loại sân, 1 sân mẫu và 3 tài khoản:
+
+| Vai trò | Email | Mật khẩu |
+|---|---|---|
+| ADMIN | `admin@footballbooking.com` | `Admin@123` |
+| OWNER | `owner@footballbooking.com` | `Owner@123` |
+| USER | `user@footballbooking.com` | `User@123` |
+
+## 10. Kiểm thử
+
+```bash
+cd Backend
+mvn test
+```
+
+23 test (unit + integration) chạy trên H2 in-memory (profile `test`), **không cần MySQL**.
+Chi tiết phạm vi: [Backend/docs/testing.md](Backend/docs/testing.md).
+
+## 11. Tài liệu chi tiết
+
+| Tài liệu | Nội dung |
+|---|---|
+| [Backend/README.md](Backend/README.md) | Cài đặt, biến môi trường, cách chạy backend |
+| [Backend/docs/architecture.md](Backend/docs/architecture.md) | Kiến trúc phân tầng, nguyên tắc bắt buộc |
+| [Backend/docs/database.md](Backend/docs/database.md) | Schema chi tiết · [database.sql](Backend/docs/database.sql) |
+| [Backend/docs/api.md](Backend/docs/api.md) | Quy ước API, danh sách endpoint |
+| [Backend/readapi.md](Backend/readapi.md) | Hướng dẫn test từng endpoint (Swagger / Postman / curl) |
+| [Backend/docs/authentication.md](Backend/docs/authentication.md) | Cơ chế JWT |
+| [Backend/docs/authorization.md](Backend/docs/authorization.md) | Phân quyền và quyền sở hữu tài nguyên |
+| [Backend/docs/testing.md](Backend/docs/testing.md) | Chiến lược kiểm thử |
+| [Backend/docs/code-review.md](Backend/docs/code-review.md) | Báo cáo review tự động theo từng mốc |
+
+## 12. Việc còn lại (roadmap)
+
+Những mục dưới đây **chưa có trong code**, ghi lại để không nhầm là đã làm:
+
+- **Frontend** — toàn bộ giao diện (React 18 + Vite).
+- **Lưới khung giờ / availability** — hiện client tự gửi `startTime`–`endTime` tự do. Chưa có bảng
+  khung giờ cố định, chưa có hệ số giá giờ cao điểm, chưa có endpoint trả ma trận giờ trống theo sân + ngày.
+- **Quy tắc hạn hủy** — hiện hủy được bất cứ lúc nào miễn đơn còn `PENDING`/`CONFIRMED`,
+  chưa có ràng buộc "chỉ hủy trước giờ đá N giờ". Admin cũng chưa có quyền hủy đơn hộ khách.
+- **Trạng thái `COMPLETED`** — có trong enum và được dùng khi tính doanh thu / xét điều kiện đánh giá,
+  nhưng **chưa có endpoint nào chuyển đơn sang `COMPLETED`**.
+- **Đổi mật khẩu** — `PUT /api/users/me` chỉ sửa `fullName` và `phone`.
+- **Ràng buộc chống trùng ở tầng DB** — hiện chỉ dựa vào khóa bi quan + truy vấn kiểm tra,
+  chưa có UNIQUE constraint làm chốt chặn cuối.
+- **Test đồng thời** — chưa có test bắn N request đặt cùng khung giờ để chứng minh đúng 1 đơn thành công.
+- **Đặt hộ khách vãng lai** — `Booking.user` bắt buộc, chưa hỗ trợ khách không có tài khoản.
+- **Thanh toán thật** — bảng `payments` chỉ ở mức cơ bản, chưa tích hợp cổng thanh toán.
+- **Docker Compose**, **Postman collection**, và **múi giờ**: cấu hình JDBC dùng `serverTimezone=UTC`
+  trong khi kiểm tra "giờ ở tương lai" dựa vào giờ mặc định của JVM — nên chốt thống nhất `Asia/Ho_Chi_Minh`.
+- **Trùng chức năng cần dọn** — `POST/PUT/DELETE /api/fields` và `/api/owner/fields` cùng làm một việc.
+
+> **Ghi chú về tài liệu.** Bản README trước đây của repo là một **bản nháp chưa duyệt**, đặc tả hệ
+> thống một-cơ-sở với NestJS + Prisma, hai vai trò `CUSTOMER`/`ADMIN` và các bảng `TimeSlot`/`BookingSlot`.
+> Bản nháp đó không phản ánh code đang có (Spring Boot, ba vai trò, nhiều chủ sân, có `Review`/`Payment`)
+> nên đã được thay bằng tài liệu này. Các yêu cầu còn giá trị từ bản nháp được giữ lại ở mục 12.

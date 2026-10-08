@@ -45,7 +45,7 @@ Các endpoint trả danh sách dùng `?page=` (bắt đầu từ `0`) và `?size
 kết quả bọc trong `PageResponse`.
 
 Tham số tìm kiếm sân: `keyword`, `address`, `fieldType` (id của loại sân), `minPrice`, `maxPrice`,
-`page`, `size`.
+`page`, `size`. Thông tin sân trả về bao gồm `phone` (hotline sân), `mapLink` (link Google Maps) và `owner.phone` (sđt chủ sân).
 
 ## Thống kê — `GET /api/admin/statistics`
 Trả về `totalUsers`, `totalOwners`, `totalFields`, `totalBookings`, `bookingsByStatus`

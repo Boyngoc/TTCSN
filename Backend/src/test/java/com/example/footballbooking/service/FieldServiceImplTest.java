@@ -55,6 +55,7 @@ class FieldServiceImplTest {
         User owner = new User();
         owner.setId(ownerId);
         owner.setFullName("Chủ sân");
+        owner.setPhone("0900000000");
         FieldType type = new FieldType();
         type.setId(1L);
         type.setName("Sân 7 người");
@@ -66,13 +67,15 @@ class FieldServiceImplTest {
         field.setName("Sân A");
         field.setAddress("Hà Nội");
         field.setPricePerHour(new BigDecimal("300000"));
+        field.setPhone("0900000000");
+        field.setMapLink("https://maps.google.com/?q=San+A");
         field.setStatus(ActiveStatus.ACTIVE);
         return field;
     }
 
     private UpdateFieldRequest updateRequest() {
         return new UpdateFieldRequest(1L, "Sân A", "Hà Nội", "mô tả",
-                new BigDecimal("350000"), null, ActiveStatus.ACTIVE);
+                new BigDecimal("350000"), null, ActiveStatus.ACTIVE, "0912345678", "https://maps.google.com/?q=San+A");
     }
 
     @Test
@@ -98,6 +101,9 @@ class FieldServiceImplTest {
         FieldResponse response = fieldService.update(1L, 1L, updateRequest());
 
         assertThat(response.pricePerHour()).isEqualByComparingTo("350000");
+        assertThat(response.phone()).isEqualTo("0912345678");
+        assertThat(response.mapLink()).isEqualTo("https://maps.google.com/?q=San+A");
+        assertThat(response.owner().phone()).isEqualTo("0900000000");
     }
 
     @Test

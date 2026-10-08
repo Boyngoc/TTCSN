@@ -55,6 +55,12 @@ public class Field {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "map_link", length = 1000)
+    private String mapLink;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ActiveStatus status;
@@ -129,6 +135,22 @@ public class Field {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getMapLink() {
+        return mapLink;
+    }
+
+    public void setMapLink(String mapLink) {
+        this.mapLink = mapLink;
     }
 
     public ActiveStatus getStatus() {

@@ -45,6 +45,8 @@ Booking 1───1 Payment
 | name, address, description | VARCHAR | |
 | price_per_hour | DECIMAL | dùng để Backend tự tính tiền |
 | image_url | VARCHAR | |
+| phone | VARCHAR(20) | số điện thoại liên hệ của sân |
+| map_link | VARCHAR(1000) | đường link xem vị trí sân trên Google Maps |
 | status | VARCHAR(20) | `ACTIVE` / `INACTIVE` — chỉ sân `ACTIVE` nhận đặt |
 | created_at / updated_at | DATETIME | |
 

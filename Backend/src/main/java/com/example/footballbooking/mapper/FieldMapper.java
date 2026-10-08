@@ -35,9 +35,15 @@ public final class FieldMapper {
                 field.getDescription(),
                 field.getPricePerHour(),
                 field.getImageUrl(),
+                field.getPhone(),
+                field.getMapLink(),
                 field.getStatus(),
                 toTypeResponse(field.getFieldType()),
-                new FieldResponse.OwnerSummary(field.getOwner().getId(), field.getOwner().getFullName()),
+                new FieldResponse.OwnerSummary(
+                        field.getOwner().getId(),
+                        field.getOwner().getFullName(),
+                        field.getOwner().getPhone()
+                ),
                 averageRating,
                 reviewCount
         );

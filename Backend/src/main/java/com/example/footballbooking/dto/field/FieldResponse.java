@@ -17,6 +17,8 @@ public record FieldResponse(
         String description,
         BigDecimal pricePerHour,
         String imageUrl,
+        String phone,
+        String mapLink,
         ActiveStatus status,
         FieldTypeResponse fieldType,
         OwnerSummary owner,
@@ -25,6 +27,6 @@ public record FieldResponse(
 ) {
 
     /** Thông tin chủ sân rút gọn. */
-    public record OwnerSummary(Long id, String fullName) {
+    public record OwnerSummary(Long id, String fullName, String phone) {
     }
 }

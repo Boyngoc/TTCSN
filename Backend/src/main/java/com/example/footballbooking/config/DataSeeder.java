@@ -101,6 +101,8 @@ public class DataSeeder implements CommandLineRunner {
         field.setAddress("123 Nguyễn Trãi, Hà Nội");
         field.setDescription("Sân cỏ nhân tạo, có mái che và đèn chiếu sáng");
         field.setPricePerHour(new BigDecimal("300000"));
+        field.setPhone("0900000000");
+        field.setMapLink("https://maps.google.com/?q=123+Nguyen+Trai+Ha+Noi");
         field.setStatus(ActiveStatus.ACTIVE);
         fieldRepository.save(field);
     }

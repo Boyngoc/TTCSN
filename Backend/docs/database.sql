@@ -67,6 +67,8 @@ CREATE TABLE fields (
     description    VARCHAR(1000),
     price_per_hour DECIMAL(12,2) NOT NULL,
     image_url      VARCHAR(500),
+    phone          VARCHAR(20),
+    map_link       VARCHAR(1000),
     status         VARCHAR(20)   NOT NULL,
     created_at     DATETIME(6),
     updated_at     DATETIME(6),
@@ -157,12 +159,14 @@ INSERT INTO users (full_name, email, password, phone, role, status, created_at, 
     ('Người dùng demo','user@footballbooking.com', '$2a$10$yGvPkv2ZV4PxOa6EC3g9H.s4A2HWFkvZLkUDudI/Bj3Wv5GVe/tqS', '0900000000', 'USER',  'ACTIVE', NOW(6), NOW(6));
 
 -- Sân mẫu thuộc chủ sân demo, loại "Sân 7 người" (dùng INSERT..SELECT để lấy đúng khóa ngoại)
-INSERT INTO fields (owner_id, field_type_id, name, address, description, price_per_hour, status, created_at, updated_at)
+INSERT INTO fields (owner_id, field_type_id, name, address, description, price_per_hour, phone, map_link, status, created_at, updated_at)
 SELECT u.id, ft.id,
        'Sân bóng Ngôi Sao',
        '123 Nguyễn Trãi, Hà Nội',
        'Sân cỏ nhân tạo, có mái che và đèn chiếu sáng',
        300000.00,
+       '0900000000',
+       'https://maps.google.com/?q=123+Nguyen+Trai+Ha+Noi',
        'ACTIVE',
        NOW(6), NOW(6)
 FROM users u

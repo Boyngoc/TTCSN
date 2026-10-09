@@ -124,7 +124,7 @@
 * `page`: Trang hiện tại (mặc định: `0`)
 * `size`: Số lượng mỗi trang (mặc định: `10`)
 
-#### Body `POST /api/fields`:
+#### Body `POST /api/fields` (hoặc `POST /api/owner/fields`):
 ```json
 {
   "fieldTypeId": 1,
@@ -132,11 +132,13 @@
   "address": "30 Phan Thúc Duyện, Tân Bình, TP.HCM",
   "description": "Sân cỏ nhân tạo chất lượng cao, có mái che, dàn đèn LED",
   "pricePerHour": 350000,
-  "imageUrl": "https://example.com/san-chao-lua.jpg"
+  "imageUrl": "https://example.com/san-chao-lua.jpg",
+  "phone": "0987654321",
+  "mapLink": "https://maps.google.com/?q=30+Phan+Thuc+Duyen+Tan+Binh"
 }
 ```
 
-#### Body `PUT /api/fields/{id}`:
+#### Body `PUT /api/fields/{id}` (hoặc `PUT /api/owner/fields/{id}`):
 ```json
 {
   "fieldTypeId": 1,
@@ -145,7 +147,9 @@
   "description": "Sân cỏ nhân tạo vừa bảo dưỡng mặt cỏ mới",
   "pricePerHour": 400000,
   "imageUrl": "https://example.com/san-chao-lua.jpg",
-  "status": "ACTIVE"
+  "status": "ACTIVE",
+  "phone": "0987654321",
+  "mapLink": "https://maps.google.com/?q=30+Phan+Thuc+Duyen+Tan+Binh"
 }
 ```
 

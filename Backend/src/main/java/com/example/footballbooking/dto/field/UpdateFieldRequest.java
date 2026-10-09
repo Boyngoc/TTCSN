@@ -30,6 +30,10 @@ public record UpdateFieldRequest(
         String imageUrl,
 
         @NotNull(message = "Trạng thái sân không được để trống")
-        ActiveStatus status
+        ActiveStatus status,
+
+        String phone,
+
+        String mapLink
 ) {
 }

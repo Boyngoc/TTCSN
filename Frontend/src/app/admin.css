@@ -1,0 +1,18 @@
+.status-summary{display:grid;gap:13px}
+.status-summary-row{display:grid;grid-template-columns:125px 1fr 34px;align-items:center;gap:12px;font-size:12px}
+.status-summary-row strong{text-align:right}
+.status-bar-track{height:8px;background:#edf1ed;border-radius:2px;overflow:hidden}
+.status-bar-track span{display:block;height:100%;background:var(--green);border-radius:2px}
+.admin-tabs button{border:0;border-bottom:2px solid transparent;background:transparent;padding:9px 12px;color:var(--muted);font-size:12px}
+.admin-tabs button.active{color:var(--green);border-color:var(--green);font-weight:700}
+.notice{display:flex;gap:12px;align-items:flex-start;background:#edf5ef;border-left:3px solid var(--green);padding:14px 16px;margin-bottom:18px;color:var(--green)}
+.notice p{font-size:12px;color:#586a5d;margin:0;line-height:1.7}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.form-grid-wide{grid-column:1/-1}
+.create-field-form{margin-bottom:18px}
+.create-field-form h2{margin-bottom:18px}
+.owner-main{padding-top:36px;padding-bottom:70px}
+.owner-main>.content-panel{margin-top:20px}
+.success-note{padding:10px 12px;background:#edf5ef;border-left:3px solid var(--green);color:var(--green)!important}
+.mobile-nav-actions button{border:0;background:transparent;padding:12px 4px;color:var(--danger);font-weight:700;font-size:13px}
+@media(max-width:680px){.form-grid{grid-template-columns:1fr}.form-grid-wide{grid-column:auto}.status-summary-row{grid-template-columns:95px 1fr 28px;gap:8px}.admin-tabs button{padding:9px}.notice{padding:12px}.owner-main{padding-top:23px;padding-bottom:48px}}

@@ -1,6 +1,7 @@
 package com.example.footballbooking.service.impl;
 
 import com.example.footballbooking.dto.PageResponse;
+import com.example.footballbooking.dto.booking.BookedSlotResponse;
 import com.example.footballbooking.dto.booking.BookingResponse;
 import com.example.footballbooking.dto.booking.CreateBookingRequest;
 import com.example.footballbooking.entity.Booking;
@@ -185,6 +186,19 @@ public class BookingServiceImpl implements BookingService {
     public PageResponse<BookingResponse> getOwnerBookings(Long ownerId, Pageable pageable) {
         Page<Booking> page = bookingRepository.findByFieldOwnerIdOrderByCreatedAtDesc(ownerId, pageable);
         return PageResponse.from(page, BookingMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookedSlotResponse> getBookedSlots(Long fieldId, LocalDate date, LocalDate fromDate, LocalDate toDate) {
+        if (!fieldRepository.existsById(fieldId)) {
+            throw new ResourceNotFoundException("Không tìm thấy sân bóng");
+        }
+        List<Booking> bookings = bookingRepository.findActiveBookingsByFieldAndDateRange(
+                fieldId, date, fromDate, toDate, ACTIVE_BOOKING_STATUSES);
+        return bookings.stream()
+                .map(b -> new BookedSlotResponse(b.getBookingDate(), b.getStartTime(), b.getEndTime()))
+                .toList();
     }
 
     // ============================ Hàm hỗ trợ nội bộ ============================

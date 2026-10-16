@@ -52,7 +52,7 @@ public class Field {
     @Column(name = "price_per_hour", nullable = false)
     private BigDecimal pricePerHour;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     @Column(name = "phone", length = 20)

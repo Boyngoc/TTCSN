@@ -29,13 +29,32 @@ public final class FieldSpecifications {
             predicates.add(cb.equal(root.get("status"), ActiveStatus.ACTIVE));
 
             if (StringUtils.hasText(keyword)) {
-                String pattern = "%" + keyword.trim().toLowerCase() + "%";
-                predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("name")), pattern),
-                        cb.like(cb.lower(root.get("address")), pattern)));
+                String clean = keyword.trim().toLowerCase();
+                String pattern = "%" + clean + "%";
+                String patternD = "%" + clean.replace('d', 'đ') + "%";
+                if (!pattern.equals(patternD)) {
+                    predicates.add(cb.or(
+                            cb.like(cb.lower(root.get("name")), pattern),
+                            cb.like(cb.lower(root.get("name")), patternD),
+                            cb.like(cb.lower(root.get("address")), pattern),
+                            cb.like(cb.lower(root.get("address")), patternD)));
+                } else {
+                    predicates.add(cb.or(
+                            cb.like(cb.lower(root.get("name")), pattern),
+                            cb.like(cb.lower(root.get("address")), pattern)));
+                }
             }
             if (StringUtils.hasText(address)) {
-                predicates.add(cb.like(cb.lower(root.get("address")), "%" + address.trim().toLowerCase() + "%"));
+                String clean = address.trim().toLowerCase();
+                String pattern = "%" + clean + "%";
+                String patternD = "%" + clean.replace('d', 'đ') + "%";
+                if (!pattern.equals(patternD)) {
+                    predicates.add(cb.or(
+                            cb.like(cb.lower(root.get("address")), pattern),
+                            cb.like(cb.lower(root.get("address")), patternD)));
+                } else {
+                    predicates.add(cb.like(cb.lower(root.get("address")), pattern));
+                }
             }
             if (fieldTypeId != null) {
                 predicates.add(cb.equal(root.get("fieldType").get("id"), fieldTypeId));

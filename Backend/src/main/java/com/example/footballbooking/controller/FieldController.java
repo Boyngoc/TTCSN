@@ -2,16 +2,19 @@ package com.example.footballbooking.controller;
 
 import com.example.footballbooking.dto.ApiResponse;
 import com.example.footballbooking.dto.PageResponse;
+import com.example.footballbooking.dto.booking.BookedSlotResponse;
 import com.example.footballbooking.dto.field.CreateFieldRequest;
 import com.example.footballbooking.dto.field.FieldResponse;
 import com.example.footballbooking.dto.field.UpdateFieldRequest;
 import com.example.footballbooking.security.SecurityUtils;
+import com.example.footballbooking.service.BookingService;
 import com.example.footballbooking.service.FieldService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * REST API sân bóng (xem công khai; tạo/sửa/xóa cần vai trò OWNER hoặc ADMIN).
@@ -35,9 +40,11 @@ import java.math.BigDecimal;
 public class FieldController {
 
     private final FieldService fieldService;
+    private final BookingService bookingService;
 
-    public FieldController(FieldService fieldService) {
+    public FieldController(FieldService fieldService, BookingService bookingService) {
         this.fieldService = fieldService;
+        this.bookingService = bookingService;
     }
 
     @GetMapping
@@ -45,14 +52,16 @@ public class FieldController {
     public ResponseEntity<ApiResponse<PageResponse<FieldResponse>>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String address,
-            @RequestParam(required = false) Long fieldType,
+            @RequestParam(required = false, name = "fieldType") Long fieldType,
+            @RequestParam(required = false, name = "fieldTypeId") Long fieldTypeId,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        Long resolvedType = fieldType != null ? fieldType : fieldTypeId;
         Pageable pageable = PageRequest.of(page, size);
         PageResponse<FieldResponse> result =
-                fieldService.search(keyword, address, fieldType, minPrice, maxPrice, pageable);
+                fieldService.search(keyword, address, resolvedType, minPrice, maxPrice, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -60,6 +69,17 @@ public class FieldController {
     @Operation(summary = "Xem chi tiết sân")
     public ResponseEntity<ApiResponse<FieldResponse>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(fieldService.getById(id)));
+    }
+
+    @GetMapping("/{id}/booked-slots")
+    @Operation(summary = "Lấy các khung giờ đã được đặt của sân (công khai cho người dùng tra cứu)")
+    public ResponseEntity<ApiResponse<List<BookedSlotResponse>>> getBookedSlots(
+            @PathVariable Long id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        List<BookedSlotResponse> result = bookingService.getBookedSlots(id, date, fromDate, toDate);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @PostMapping

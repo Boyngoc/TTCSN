@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Truy cập dữ liệu booking.
@@ -26,6 +27,25 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /** Tất cả booking (cho Admin), phân trang, mới nhất trước. */
     Page<Booking> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    /**
+     * Lấy danh sách booking đang giữ chỗ của một sân theo khoảng ngày hoặc ngày cụ thể.
+     */
+    @Query("""
+            SELECT b FROM Booking b
+            WHERE b.field.id = :fieldId
+              AND (:date IS NULL OR b.bookingDate = :date)
+              AND (:fromDate IS NULL OR b.bookingDate >= :fromDate)
+              AND (:toDate IS NULL OR b.bookingDate <= :toDate)
+              AND b.status IN :activeStatuses
+            ORDER BY b.bookingDate ASC, b.startTime ASC
+            """)
+    List<Booking> findActiveBookingsByFieldAndDateRange(
+            @Param("fieldId") Long fieldId,
+            @Param("date") LocalDate date,
+            @Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("activeStatuses") Collection<BookingStatus> activeStatuses);
 
     /**
      * Kiểm tra có tồn tại booking trùng khung giờ trên cùng sân, cùng ngày hay không.

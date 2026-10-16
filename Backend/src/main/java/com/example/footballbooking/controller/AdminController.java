@@ -7,6 +7,7 @@ import com.example.footballbooking.dto.admin.UpdateFieldStatusRequest;
 import com.example.footballbooking.dto.admin.UpdateUserStatusRequest;
 import com.example.footballbooking.dto.booking.BookingResponse;
 import com.example.footballbooking.dto.field.FieldResponse;
+import com.example.footballbooking.dto.review.ReviewResponse;
 import com.example.footballbooking.dto.user.UserResponse;
 import com.example.footballbooking.service.AdminService;
 import com.example.footballbooking.service.StatisticsService;
@@ -17,6 +18,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -94,5 +96,24 @@ public class AdminController {
     @Operation(summary = "Thống kê tổng quan hệ thống")
     public ResponseEntity<ApiResponse<StatisticsResponse>> statistics() {
         return ResponseEntity.ok(ApiResponse.success(statisticsService.getStatistics()));
+    }
+
+    @GetMapping("/reviews")
+    @Operation(summary = "Danh sách toàn bộ đánh giá của người dùng trên hệ thống")
+    public ResponseEntity<ApiResponse<PageResponse<ReviewResponse>>> reviews(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) Long fieldId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(ApiResponse.success(
+                adminService.getReviews(keyword, rating, fieldId, PageRequest.of(page, size))));
+    }
+
+    @DeleteMapping("/reviews/{id}")
+    @Operation(summary = "Xóa đánh giá vi phạm (chỉ ADMIN)")
+    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long id) {
+        adminService.deleteReview(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã xóa đánh giá thành công", null));
     }
 }

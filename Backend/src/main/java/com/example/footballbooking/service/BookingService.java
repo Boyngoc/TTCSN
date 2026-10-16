@@ -1,9 +1,13 @@
 package com.example.footballbooking.service;
 
 import com.example.footballbooking.dto.PageResponse;
+import com.example.footballbooking.dto.booking.BookedSlotResponse;
 import com.example.footballbooking.dto.booking.BookingResponse;
 import com.example.footballbooking.dto.booking.CreateBookingRequest;
 import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Nghiệp vụ đặt sân — module quan trọng nhất.
@@ -33,4 +37,7 @@ public interface BookingService {
 
     /** Danh sách booking thuộc các sân của chủ sân hiện tại. */
     PageResponse<BookingResponse> getOwnerBookings(Long ownerId, Pageable pageable);
+
+    /** Lấy danh sách các khung giờ đã được đặt của sân (công khai). */
+    List<BookedSlotResponse> getBookedSlots(Long fieldId, LocalDate date, LocalDate fromDate, LocalDate toDate);
 }

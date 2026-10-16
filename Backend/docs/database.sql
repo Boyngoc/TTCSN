@@ -17,6 +17,7 @@ CREATE DATABASE IF NOT EXISTS football_booking
 USE football_booking;
 
 -- Xóa theo thứ tự ngược khóa ngoại để có thể chạy lại nhiều lần
+DROP TABLE IF EXISTS system_settings;
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS bookings;
@@ -66,7 +67,7 @@ CREATE TABLE fields (
     address        VARCHAR(255)  NOT NULL,
     description    VARCHAR(1000),
     price_per_hour DECIMAL(12,2) NOT NULL,
-    image_url      VARCHAR(500),
+    image_url      LONGTEXT,
     phone          VARCHAR(20),
     map_link       VARCHAR(1000),
     status         VARCHAR(20)   NOT NULL,
@@ -139,6 +140,16 @@ CREATE TABLE payments (
     CONSTRAINT fk_payments_booking FOREIGN KEY (booking_id) REFERENCES bookings(id),
     CONSTRAINT chk_payments_method CHECK (payment_method IN ('CASH','BANK_TRANSFER')),
     CONSTRAINT chk_payments_status CHECK (status IN ('PENDING','PAID','FAILED','REFUNDED'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------------
+-- Bảng cài đặt hệ thống (Cấu hình thương hiệu, hotline, logo, chân trang)
+-- ------------------------------------------------------------------
+CREATE TABLE system_settings (
+    setting_key   VARCHAR(100) NOT NULL,
+    setting_value LONGTEXT,
+    updated_at    DATETIME(6),
+    PRIMARY KEY (setting_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================================================

@@ -30,4 +30,11 @@ public interface AdminService {
 
     /** Cập nhật trạng thái sân. */
     FieldResponse updateFieldStatus(Long fieldId, ActiveStatus status);
+
+    /** Danh sách toàn bộ đánh giá của người dùng với bộ lọc từ khóa, số sao, sân bóng. */
+    com.example.footballbooking.dto.PageResponse<com.example.footballbooking.dto.review.ReviewResponse> getReviews(
+            String keyword, Integer rating, Long fieldId, Pageable pageable);
+
+    /** Xóa một đánh giá (dành cho Admin khi đánh giá vi phạm/spam). */
+    void deleteReview(Long reviewId);
 }

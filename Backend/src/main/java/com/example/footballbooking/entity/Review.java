@@ -37,10 +37,13 @@ public class Review {
     @JoinColumn(name = "field_id", nullable = false)
     private Field field;
 
-    // Mỗi booking chỉ được đánh giá một lần
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "booking_id", nullable = false, unique = true)
+    // Mỗi booking chỉ được đánh giá một lần (nếu có gắn booking)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = true, unique = true)
     private Booking booking;
+
+    @Column(name = "edit_count", nullable = false)
+    private Integer editCount = 0;
 
     @Column(nullable = false)
     private Integer rating;
@@ -102,6 +105,14 @@ public class Review {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Integer getEditCount() {
+        return editCount != null ? editCount : 0;
+    }
+
+    public void setEditCount(Integer editCount) {
+        this.editCount = editCount;
     }
 
     public LocalDateTime getCreatedAt() {

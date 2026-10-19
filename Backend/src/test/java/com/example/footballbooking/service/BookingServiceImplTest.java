@@ -12,6 +12,7 @@ import com.example.footballbooking.exception.ConflictException;
 import com.example.footballbooking.exception.ForbiddenException;
 import com.example.footballbooking.exception.ResourceNotFoundException;
 import com.example.footballbooking.repository.BookingRepository;
+import com.example.footballbooking.repository.BookingSlotRepository;
 import com.example.footballbooking.repository.FieldRepository;
 import com.example.footballbooking.repository.PaymentRepository;
 import com.example.footballbooking.repository.UserRepository;
@@ -46,6 +47,8 @@ class BookingServiceImplTest {
 
     @Mock
     private BookingRepository bookingRepository;
+    @Mock
+    private BookingSlotRepository bookingSlotRepository;
     @Mock
     private FieldRepository fieldRepository;
     @Mock
@@ -100,6 +103,16 @@ class BookingServiceImplTest {
         assertThat(response.totalPrice()).isEqualByComparingTo("600000");
         assertThat(response.status()).isEqualTo(BookingStatus.PENDING);
         verify(paymentRepository).save(any());
+        // Có sinh các ô giữ chỗ theo khung giờ (chốt chặn chống trùng ở tầng DB)
+        verify(bookingSlotRepository).saveAll(any());
+    }
+
+    @Test
+    @DisplayName("Giờ đặt không tròn (có phút) → 400")
+    void create_nonWholeHour_throwsBadRequest() {
+        assertThatThrownBy(() -> bookingService.create(USER_ID, request(LocalTime.of(18, 30), LocalTime.of(20, 0))))
+                .isInstanceOf(BadRequestException.class);
+        verify(fieldRepository, never()).findByIdForUpdate(anyLong());
     }
 
     @Test
@@ -168,6 +181,8 @@ class BookingServiceImplTest {
         BookingResponse response = bookingService.cancel(USER_ID, 5L);
 
         assertThat(response.status()).isEqualTo(BookingStatus.CANCELLED);
+        // Hủy đơn phải giải phóng khung giờ (đặt active_key = NULL) để đặt lại được ngay
+        verify(bookingSlotRepository).deactivateByBookingId(5L);
     }
 
     @Test

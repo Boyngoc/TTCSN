@@ -105,6 +105,25 @@ CREATE TABLE bookings (
 CREATE INDEX idx_booking_field_date ON bookings (field_id, booking_date);
 
 -- ------------------------------------------------------------------
+-- Bảng ô giữ chỗ theo khung giờ 1 tiếng (chốt chặn chống trùng ở tầng DB)
+-- active_key = 1 khi đang giữ chỗ, NULL khi đã hủy/từ chối.
+-- UNIQUE gồm cả active_key: do SQL coi các NULL là khác nhau nên ô đã hủy
+-- không chặn đặt lại, còn mỗi (sân, ngày, giờ) chỉ có tối đa 1 ô đang hoạt động.
+-- ------------------------------------------------------------------
+CREATE TABLE booking_slots (
+    id           BIGINT NOT NULL AUTO_INCREMENT,
+    field_id     BIGINT NOT NULL,
+    booking_id   BIGINT NOT NULL,
+    booking_date DATE   NOT NULL,
+    slot_hour    TIME   NOT NULL,
+    active_key   INT,
+    PRIMARY KEY (id),
+    CONSTRAINT uk_slot_field_date_hour_active UNIQUE (field_id, booking_date, slot_hour, active_key),
+    CONSTRAINT fk_slots_field   FOREIGN KEY (field_id)   REFERENCES fields(id),
+    CONSTRAINT fk_slots_booking FOREIGN KEY (booking_id) REFERENCES bookings(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------------
 -- Bảng đánh giá (mỗi booking chỉ đánh giá 1 lần)
 -- ------------------------------------------------------------------
 CREATE TABLE reviews (

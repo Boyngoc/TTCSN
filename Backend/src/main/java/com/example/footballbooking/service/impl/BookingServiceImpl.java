@@ -5,6 +5,7 @@ import com.example.footballbooking.dto.booking.BookedSlotResponse;
 import com.example.footballbooking.dto.booking.BookingResponse;
 import com.example.footballbooking.dto.booking.CreateBookingRequest;
 import com.example.footballbooking.entity.Booking;
+import com.example.footballbooking.entity.BookingSlot;
 import com.example.footballbooking.entity.Field;
 import com.example.footballbooking.entity.Payment;
 import com.example.footballbooking.entity.User;
@@ -18,6 +19,7 @@ import com.example.footballbooking.exception.ForbiddenException;
 import com.example.footballbooking.exception.ResourceNotFoundException;
 import com.example.footballbooking.mapper.BookingMapper;
 import com.example.footballbooking.repository.BookingRepository;
+import com.example.footballbooking.repository.BookingSlotRepository;
 import com.example.footballbooking.repository.FieldRepository;
 import com.example.footballbooking.repository.PaymentRepository;
 import com.example.footballbooking.repository.UserRepository;
@@ -32,6 +34,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,15 +50,18 @@ public class BookingServiceImpl implements BookingService {
     private static final int MINUTES_PER_HOUR = 60;
 
     private final BookingRepository bookingRepository;
+    private final BookingSlotRepository bookingSlotRepository;
     private final FieldRepository fieldRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
+                              BookingSlotRepository bookingSlotRepository,
                               FieldRepository fieldRepository,
                               UserRepository userRepository,
                               PaymentRepository paymentRepository) {
         this.bookingRepository = bookingRepository;
+        this.bookingSlotRepository = bookingSlotRepository;
         this.fieldRepository = fieldRepository;
         this.userRepository = userRepository;
         this.paymentRepository = paymentRepository;
@@ -104,7 +110,17 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING);
         Booking saved = bookingRepository.save(booking);
 
-        // (7) Tạo bản ghi thanh toán ở mức cơ bản (chờ thanh toán, mặc định tiền mặt)
+        // (7) Sinh các ô giữ chỗ theo từng khung giờ 1 tiếng. Ràng buộc UNIQUE trên
+        //     (field_id, booking_date, slot_hour, active_key) là chốt chặn cuối ở tầng DB:
+        //     nếu có yêu cầu khác chèn trùng khung giờ (kể cả chạy song song), thao tác này
+        //     ném DataIntegrityViolationException và được GlobalExceptionHandler trả về 409.
+        List<BookingSlot> slots = new ArrayList<>();
+        for (LocalTime hour = request.startTime(); hour.isBefore(request.endTime()); hour = hour.plusHours(1)) {
+            slots.add(new BookingSlot(field.getId(), saved.getId(), request.bookingDate(), hour));
+        }
+        bookingSlotRepository.saveAll(slots);
+
+        // (8) Tạo bản ghi thanh toán ở mức cơ bản (chờ thanh toán, mặc định tiền mặt)
         Payment payment = new Payment();
         payment.setBooking(saved);
         payment.setAmount(totalPrice);
@@ -146,6 +162,8 @@ public class BookingServiceImpl implements BookingService {
             throw new ConflictException("Không thể hủy lượt đặt ở trạng thái hiện tại");
         }
         booking.setStatus(BookingStatus.CANCELLED);
+        // Giải phóng khung giờ ngay: đặt active_key = NULL để có thể đặt lại khung giờ này
+        bookingSlotRepository.deactivateByBookingId(bookingId);
         // Nếu đã thanh toán thì đánh dấu hoàn tiền
         paymentRepository.findByBookingId(bookingId).ifPresent(payment -> {
             if (payment.getStatus() == PaymentStatus.PAID) {
@@ -178,6 +196,8 @@ public class BookingServiceImpl implements BookingService {
             throw new ConflictException("Chỉ có thể từ chối lượt đặt đang chờ (PENDING)");
         }
         booking.setStatus(BookingStatus.REJECTED);
+        // Giải phóng khung giờ của đơn bị từ chối
+        bookingSlotRepository.deactivateByBookingId(bookingId);
         return BookingMapper.toResponse(booking);
     }
 
@@ -209,6 +229,10 @@ public class BookingServiceImpl implements BookingService {
         }
         if (!request.startTime().isBefore(request.endTime())) {
             throw new BadRequestException("Giờ bắt đầu phải trước giờ kết thúc");
+        }
+        // Đặt sân theo từng khung giờ tròn (mỗi ca 1 tiếng) để khớp mô hình ô giữ chỗ
+        if (request.startTime().getMinute() != 0 || request.endTime().getMinute() != 0) {
+            throw new BadRequestException("Giờ đặt phải theo khung giờ tròn (ví dụ 18:00, 19:00)");
         }
         // Nếu đặt trong ngày hôm nay, giờ bắt đầu phải ở tương lai
         if (request.bookingDate().isEqual(LocalDate.now())

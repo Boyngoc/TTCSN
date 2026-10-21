@@ -1,0 +1,29 @@
+# Lưới an toàn cho cả dự án. Frontend/ và Backend/ vẫn có .gitignore riêng.
+
+# Thư viện cài bằng npm — không bao giờ commit, chạy `npm install` để có
+node_modules/
+
+# Kết quả build
+dist/
+build/
+target/
+out/
+
+# Cache của Vite
+.vite/
+
+# Biến môi trường thật (file .env.example vẫn được commit)
+.env
+.env.local
+.env.*.local
+
+# Log
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Rác hệ điều hành và editor
+.DS_Store
+Thumbs.db
+*.swp
+*~

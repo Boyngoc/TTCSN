@@ -1,300 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import fieldService from '../services/fieldService';
-import BookingModal from '../components/BookingModal';
-import { 
-  MapPin, 
-  Phone, 
-  Calendar, 
-  Star, 
-  Clock, 
-  ShieldCheck, 
-  ExternalLink, 
-  ArrowLeft, 
-  User, 
-  MessageSquare,
-  AlertCircle,
-  Loader2,
-  Tag
-} from 'lucide-react';
+import { ArrowLeft, CalendarDays, MapPin, Star } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext.jsx'
+import { useCreateBooking, useField, useReviews } from '../hooks/useApi.js'
+import { getErrorMessage } from '../services/api/client.js'
+import { formatDate, formatPrice, localToday } from '../utils/format.js'
+import { EmptyState, ErrorMessage, Loading, Notice } from '../components/Feedback.jsx'
 
-const FieldDetailPage = () => {
-  const { id } = useParams();
-
-  const [field, setField] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // State điều khiển mở BookingModal
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchFieldData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [fieldRes, reviewRes] = await Promise.allSettled([
-          fieldService.getFieldById(id),
-          fieldService.getFieldReviews(id),
-        ]);
-
-        if (fieldRes.status === 'fulfilled') {
-          setField(fieldRes.value.data);
-        } else {
-          throw new Error(fieldRes.reason?.message || 'Không tìm thấy thông tin sân bóng.');
-        }
-
-        if (reviewRes.status === 'fulfilled') {
-          setReviews(reviewRes.value.data || []);
-        }
-      } catch (err) {
-        setError(err.message || 'Đã xảy ra lỗi khi tải thông tin sân bóng.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchFieldData();
-    }
-  }, [id]);
-
-  const formatPrice = (price) => {
-    if (!price) return 'Liên hệ';
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
-  };
-
-  const defaultImage = 'https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1200&q=80';
-
-  if (loading) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-10 h-10 text-emerald-600 animate-spin" />
-        <p className="text-sm text-slate-500 font-medium">Đang tải thông tin chi tiết sân bóng...</p>
-      </div>
-    );
+export default function FieldDetailPage() {
+  const { id } = useParams()
+  const { user } = useAuth()
+  const field = useField(id)
+  const reviews = useReviews(id)
+  const createBooking = useCreateBooking()
+  const [booking, setBooking] = useState({ bookingDate: localToday(), startTime: '', endTime: '' })
+  const [success, setSuccess] = useState(null)
+  const canBook = user?.role === 'USER'
+  const submitBooking = (event) => {
+    event.preventDefault()
+    setSuccess(null)
+    if (!booking.startTime || !booking.endTime || booking.startTime >= booking.endTime) return
+    createBooking.mutate({ fieldId: Number(id), bookingDate: booking.bookingDate, startTime: booking.startTime, endTime: booking.endTime }, {
+      onSuccess: (created) => setSuccess(created),
+    })
   }
 
-  if (error || !field) {
-    return (
-      <div className="max-w-xl mx-auto my-16 p-8 bg-red-50 border border-red-200 rounded-2xl text-center space-y-4">
-        <AlertCircle className="w-10 h-10 text-red-600 mx-auto" />
-        <h2 className="text-xl font-bold text-red-800">Không Thể Tìm Thấy Sân</h2>
-        <p className="text-sm text-red-600">{error || 'Sân bóng không tồn tại hoặc đã bị ẩn.'}</p>
-        <Link
-          to="/fields"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Quay lại danh sách sân
-        </Link>
-      </div>
-    );
-  }
+  if (field.isLoading) return <div className="page-wrap"><Loading /></div>
+  if (field.isError) return <div className="page-wrap"><ErrorMessage message={getErrorMessage(field.error, 'Không tìm thấy sân bóng.')} onRetry={field.refetch} /></div>
+  const item = field.data
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Breadcrumb & Back Link */}
-      <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-        <Link to="/fields" className="hover:text-emerald-600 flex items-center gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" /> Danh sách sân
-        </Link>
-        <span>/</span>
-        <span className="text-slate-800 font-semibold truncate max-w-xs">{field.name}</span>
-      </div>
-
-      {/* Main Grid: Details (Left) + Booking Sticky Box (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Image, Description, Reviews */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Hero Image */}
-          <div className="relative aspect-[16/9] rounded-3xl overflow-hidden bg-slate-100 shadow-md border border-slate-200/80">
-            <img
-              src={field.imageUrl || defaultImage}
-              alt={field.name}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = defaultImage;
-              }}
-              className="w-full h-full object-cover"
-            />
-            {field.fieldType && (
-              <div className="absolute top-4 left-4 bg-emerald-600/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5" />
-                {field.fieldType.name}
-              </div>
-            )}
-            {field.averageRating !== undefined && field.averageRating !== null && (
-              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-md text-slate-800 text-sm font-extrabold px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5">
-                <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                <span>{field.averageRating.toFixed(1)}</span>
-                <span className="text-slate-400 font-normal text-xs">({field.reviewCount} đánh giá)</span>
-              </div>
-            )}
-          </div>
-
-          {/* Field Details */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                {field.name}
-              </h1>
-              <div className="flex items-start gap-2 mt-2 text-slate-600 text-sm">
-                <MapPin className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span>{field.address}</span>
-              </div>
-            </div>
-
-            {/* Quick Contacts & Links */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              {field.phone && (
-                <a
-                  href={`tel:${field.phone}`}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-semibold transition-colors"
-                >
-                  <Phone className="w-4 h-4 text-emerald-600" />
-                  Hotline: {field.phone}
-                </a>
-              )}
-
-              {field.mapLink && (
-                <a
-                  href={field.mapLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-semibold transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4 text-emerald-600" />
-                  Xem trên Google Maps
-                </a>
-              )}
-
-              {field.owner && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-50 text-slate-600 rounded-xl text-xs">
-                  <User className="w-4 h-4 text-slate-400" />
-                  Chủ sân: <span className="font-semibold text-slate-800">{field.owner.fullName}</span>
-                </div>
-              )}
-            </div>
-
-            <hr className="border-slate-100" />
-
-            {/* Description */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-base text-slate-900">Mô Tả & Tiện Ích</h3>
-              <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line">
-                {field.description || 'Chưa có thông tin mô tả chi tiết cho sân bóng này.'}
-              </p>
-            </div>
-          </div>
-
-          {/* Reviews Section */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-bold text-lg text-slate-900">Đánh Giá Từ Cầu Thủ</h3>
-              </div>
-              <span className="text-xs text-slate-500 font-medium">
-                {reviews.length} nhận xét
-              </span>
-            </div>
-
-            {reviews.length > 0 ? (
-              <div className="space-y-4">
-                {reviews.map((rev) => (
-                  <div key={rev.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs uppercase">
-                          {rev.userFullName?.charAt(0) || 'U'}
-                        </div>
-                        <span className="font-semibold text-xs text-slate-800">{rev.userFullName}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3.5 h-3.5 ${
-                              i < rev.rating
-                                ? 'text-amber-500 fill-amber-500'
-                                : 'text-slate-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed pl-9">{rev.comment}</p>
-                    {rev.createdAt && (
-                      <p className="text-[10px] text-slate-400 pl-9">
-                        Đánh giá ngày {new Date(rev.createdAt).toLocaleDateString('vi-VN')}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400 italic text-center py-6">
-                Chưa có đánh giá nào cho sân này. Hãy là người đầu tiên đặt sân và trải nghiệm!
-              </p>
-            )}
-          </div>
+  return <div className="page-wrap">
+    <Link to="/san" className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-pitch-700"><ArrowLeft size={16} />Quay lại danh sách sân</Link>
+    <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_.85fr]">
+      <div>
+        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-pitch-700 to-emerald-400">
+          {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="h-[340px] w-full object-cover sm:h-[460px]" /> : <div className="pitch-lines grid h-[340px] place-items-center sm:h-[460px]"><span className="rounded-full border border-white/50 bg-white/10 px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white">Sân Nhà</span></div>}
         </div>
-
-        {/* Right Column: Sticky Booking Callout */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-24 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-xl space-y-6">
-            <div className="space-y-1">
-              <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">Đơn giá thuê</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-black text-emerald-600">
-                  {formatPrice(field.pricePerHour)}
-                </span>
-                <span className="text-xs text-slate-400">/ 1 giờ</span>
-              </div>
-            </div>
-
-            <div className="space-y-3 p-4 bg-slate-50 rounded-2xl text-xs text-slate-600 border border-slate-100">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-emerald-600" />
-                <span>Mở cửa: 06:00 - 23:00 hàng ngày</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Giữ chỗ ngay khi gửi đơn thành công</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-emerald-600" />
-                <span>Cho phép đặt trước nhiều ngày</span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setIsBookingOpen(true)}
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-emerald-600/30 hover:shadow-xl transition-all flex items-center justify-center gap-2"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>ĐẶT LỊCH SÂN NGAY</span>
-            </button>
-
-            <p className="text-[11px] text-center text-slate-400">
-              Thao tác đặt lịch nhanh, thanh toán trực tiếp tại sân khi nhận sân.
-            </p>
-          </div>
+        <div className="mt-7"><div className="flex flex-wrap items-center gap-3"><span className="rounded-full bg-pitch-50 px-3 py-1 text-xs font-bold text-pitch-700">{item.fieldType?.name || 'Sân bóng'}</span><span className={`rounded-full px-3 py-1 text-xs font-bold ${item.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{item.status === 'ACTIVE' ? 'Đang nhận đặt' : 'Tạm ngưng'}</span></div>
+          <h1 className="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">{item.name}</h1><p className="mt-3 flex items-center gap-2 text-slate-500"><MapPin size={18} />{item.address}</p>
+          <p className="mt-5 whitespace-pre-line leading-7 text-slate-600">{item.description || 'Chủ sân chưa bổ sung mô tả cho sân này.'}</p>
+          <div className="mt-6 flex flex-wrap gap-6 border-y border-slate-200 py-5"><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Giá thuê theo giờ</p><p className="mt-1 text-2xl font-black text-pitch-700">{formatPrice(item.pricePerHour)}</p></div>{item.averageRating != null && <div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Đánh giá</p><p className="mt-1 flex items-center gap-1 text-xl font-black text-amber-600"><Star size={18} fill="currentColor" />{Number(item.averageRating).toFixed(1)} <span className="text-sm font-medium text-slate-500">({item.reviewCount || 0})</span></p></div>}</div>
         </div>
+        <section className="mt-10"><h2 className="text-xl font-black text-slate-900">Đánh giá từ người chơi</h2>{reviews.isLoading ? <Loading /> : reviews.isError ? <div className="mt-4"><ErrorMessage message={getErrorMessage(reviews.error, 'Không tải được đánh giá.')} onRetry={reviews.refetch} /></div> : reviews.data?.content?.length ? <div className="mt-4 space-y-3">{reviews.data.content.map((review) => <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-5"><div className="flex justify-between gap-3"><p className="font-bold text-slate-900">{review.userFullName}</p><span className="flex items-center gap-1 text-sm font-bold text-amber-600"><Star size={14} fill="currentColor" />{review.rating}/5</span></div>{review.comment && <p className="mt-2 text-sm leading-6 text-slate-600">{review.comment}</p>}<p className="mt-3 text-xs text-slate-400">{formatDate(review.createdAt?.slice(0, 10))}</p></article>)}</div> : <div className="mt-4"><EmptyState title="Sân chưa có đánh giá" /></div>}</section>
       </div>
-
-      {/* Booking Modal */}
-      <BookingModal
-        field={field}
-        isOpen={isBookingOpen}
-        onClose={() => setIsBookingOpen(false)}
-        onSuccess={(booking) => {
-          console.log('Đặt sân thành công:', booking);
-        }}
-      />
+      <aside className="sticky top-24 rounded-3xl border border-slate-200 bg-white p-6 shadow-card">
+        <p className="eyebrow">Đặt lịch sân</p><h2 className="mt-2 text-2xl font-black text-slate-950">Chọn ngày & giờ</h2><p className="mt-2 text-sm leading-6 text-slate-500">Tổng tiền và tình trạng khung giờ sẽ do backend xác nhận sau khi gửi yêu cầu.</p>
+        {success && <div className="mt-5"><Notice>Đã gửi yêu cầu đặt sân #{success.id}. Tổng tiền backend xác nhận: <strong>{formatPrice(success.totalPrice)}</strong> · {success.status}</Notice></div>}
+        {createBooking.isError && <div className="mt-5"><ErrorMessage message={getErrorMessage(createBooking.error)} /></div>}
+        {canBook ? <form onSubmit={submitBooking} className="mt-6 space-y-4">
+          <label className="field-label">Ngày đặt<input className="input-control" type="date" min={localToday()} required value={booking.bookingDate} onChange={(e) => setBooking({ ...booking, bookingDate: e.target.value })} /></label>
+          <div className="grid grid-cols-2 gap-3"><label className="field-label">Giờ bắt đầu<input className="input-control" type="time" required value={booking.startTime} onChange={(e) => setBooking({ ...booking, startTime: e.target.value })} /></label><label className="field-label">Giờ kết thúc<input className="input-control" type="time" required value={booking.endTime} onChange={(e) => setBooking({ ...booking, endTime: e.target.value })} /></label></div>
+          {booking.startTime && booking.endTime && booking.startTime >= booking.endTime && <p className="text-sm font-medium text-red-600">Giờ bắt đầu phải trước giờ kết thúc.</p>}
+          <div className="rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-800"><CalendarDays size={15} className="mr-1 inline" />Khung giờ chỉ được xác nhận khi backend chấp nhận đặt sân.</div>
+          <button className="btn-primary w-full justify-center" disabled={createBooking.isPending || !item.status || item.status !== 'ACTIVE' || !booking.startTime || !booking.endTime || booking.startTime >= booking.endTime}>{createBooking.isPending ? 'Đang gửi yêu cầu...' : 'Gửi yêu cầu đặt sân'}</button>
+        </form> : <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">{user ? 'Tài khoản hiện tại không có quyền đặt sân.' : <>Đăng nhập tài khoản người chơi để đặt sân. <Link className="font-bold text-pitch-700 underline" to="/dang-nhap">Đăng nhập</Link></>}</div>}
+        {item.status !== 'ACTIVE' && <p className="mt-3 text-center text-sm font-semibold text-amber-700">Sân hiện không nhận đặt.</p>}
+      </aside>
     </div>
-  );
-};
-
-export default FieldDetailPage;
+  </div>
+}

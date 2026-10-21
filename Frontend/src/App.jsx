@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -8,10 +9,21 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import HomePage from './pages/HomePage';
 import FieldListPage from './pages/FieldListPage';
+import FieldsPage from './pages/FieldsPage';
 import FieldDetailPage from './pages/FieldDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import MyBookingsPage from './pages/MyBookingsPage';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 60 * 1000,
+    },
+  },
+});
 
 const NotFoundPage = () => (
   <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
@@ -31,38 +43,43 @@ const NotFoundPage = () => (
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
-          <Navbar />
-          <main className="flex-1">
-            <Routes>
-              {/* TUẦN 2 & 3: Trang chủ & Danh sách sân */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/fields" element={<FieldListPage />} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+            <Navbar />
+            <main className="flex-1">
+              <Routes>
+                {/* TUẦN 2 & 3: Trang chủ & Danh sách sân */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/fields" element={<FieldListPage />} />
 
-              {/* TUẦN 4: Chi tiết sân & luồng Đặt sân */}
-              <Route path="/fields/:id" element={<FieldDetailPage />} />
+                {/* Danh sách sân có bộ lọc, lấy dữ liệu qua React Query */}
+                <Route path="/san" element={<FieldsPage />} />
 
-              {/* TUẦN 5: Xác thực Auth & Protected routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route
-                path="/my-bookings"
-                element={
-                  <ProtectedRoute>
-                    <MyBookingsPage />
-                  </ProtectedRoute>
-                }
-              />
+                {/* TUẦN 4: Chi tiết sân & luồng Đặt sân */}
+                <Route path="/fields/:id" element={<FieldDetailPage />} />
 
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </BrowserRouter>
-    </AuthProvider>
+                {/* TUẦN 5: Xác thực Auth & Protected routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route
+                  path="/my-bookings"
+                  element={
+                    <ProtectedRoute>
+                      <MyBookingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

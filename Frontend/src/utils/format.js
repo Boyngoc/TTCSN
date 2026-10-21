@@ -15,6 +15,13 @@ export function formatVND(amount) {
 }
 
 /**
+ * Bí danh của formatVND, dùng trong các component hiển thị giá sân.
+ * @param {number|string} amount
+ * @returns {string}
+ */
+export const formatPrice = formatVND;
+
+/**
  * Định dạng ngày (YYYY-MM-DD hoặc ISO string) sang dd/MM/yyyy.
  * @param {string} dateStr
  * @returns {string}

@@ -1,6 +1,11 @@
 # Frontend — Football Booking (Hệ thống quản lý và đặt sân bóng)
 
+<<<<<<< Updated upstream
 Frontend hoàn chỉnh cho dự án học phần **Phát triển phần mềm hướng dịch vụ (SOA)**, kết nối trực tiếp với REST API Spring Boot tại [../Backend](../Backend).
+=======
+> **Trạng thái: Đã triển khai đầy đủ các module theo kế hoạch từ Tuần 2 đến Tuần 5** (Trang chủ, Danh sách sân & bộ lọc, Chi tiết sân, Modal đặt sân & tính giá, Xác thực JWT, Auth Context, Protected Route, Lịch sử đặt sân).
+> Backend đã sẵn sàng phục vụ tại `http://localhost:8080/api` — xem [../Backend/README.md](../Backend/README.md).
+>>>>>>> Stashed changes
 
 ---
 

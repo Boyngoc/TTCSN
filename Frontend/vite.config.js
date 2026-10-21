@@ -1,11 +1,17 @@
+<<<<<<< Updated upstream
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+=======
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+>>>>>>> Stashed changes
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+<<<<<<< Updated upstream
     host: true,
   },
   build: {
@@ -20,3 +26,15 @@ export default defineConfig({
     },
   },
 })
+=======
+    // Proxy API sang Spring Boot Backend để tránh lỗi CORS trong môi trường dev
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+});
+>>>>>>> Stashed changes

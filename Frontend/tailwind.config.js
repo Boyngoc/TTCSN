@@ -7,7 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
+<<<<<<< Updated upstream
         brand: {
+=======
+        turf: {
+>>>>>>> Stashed changes
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
@@ -18,9 +22,14 @@ export default {
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
+<<<<<<< Updated upstream
           950: '#052e16',
         },
       },
+=======
+        }
+      }
+>>>>>>> Stashed changes
     },
   },
   plugins: [],

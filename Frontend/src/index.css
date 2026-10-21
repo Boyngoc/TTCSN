@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @layer base {
+<<<<<<< Updated upstream
   html {
     scroll-behavior: smooth;
   }
@@ -37,5 +38,24 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
+=======
+  body {
+    @apply bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+>>>>>>> Stashed changes
   background: #94a3b8;
 }

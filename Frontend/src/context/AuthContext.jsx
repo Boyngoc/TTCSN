@@ -1,11 +1,17 @@
+<<<<<<< Updated upstream
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authApi } from '../api/authApi';
 import { userApi } from '../api/userApi';
 import { AUTH_EVENTS } from '../api/client';
+=======
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import authService from '../services/authService';
+>>>>>>> Stashed changes
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+<<<<<<< Updated upstream
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [user, setUser] = useState(() => {
     try {
@@ -25,10 +31,21 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Listen to 401 unauthorized events emitted from Axios interceptor
+=======
+  const [token, setToken] = useState(() => localStorage.getItem('accessToken'));
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [loading, setLoading] = useState(false);
+
+  // Lắng nghe sự kiện 401 Unauthorized từ Axios Interceptor để tự động đăng xuất
+>>>>>>> Stashed changes
   useEffect(() => {
     const handleUnauthorized = () => {
       logout();
     };
+<<<<<<< Updated upstream
     window.addEventListener(AUTH_EVENTS.UNAUTHORIZED, handleUnauthorized);
     return () => {
       window.removeEventListener(AUTH_EVENTS.UNAUTHORIZED, handleUnauthorized);
@@ -87,11 +104,76 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(updated));
       return updated;
     });
+=======
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, []);
+
+  /**
+   * Đăng nhập: Gọi authService.login, lưu token & user vào localStorage và state
+   */
+  const login = async (email, password) => {
+    setLoading(true);
+    try {
+      const response = await authService.login({ email, password });
+      // Spring Boot ApiResponse bọc dữ liệu trong field `data`
+      const { accessToken, user: userData } = response.data;
+
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      setToken(accessToken);
+      setUser(userData);
+
+      return { success: true, message: response.message || 'Đăng nhập thành công' };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Email hoặc mật khẩu không chính xác',
+        errors: error.errors || null,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Đăng ký tài khoản người dùng mới
+   */
+  const register = async (userData) => {
+    setLoading(true);
+    try {
+      const response = await authService.register(userData);
+      return { success: true, message: response.message || 'Đăng ký tài khoản thành công! Hãy đăng nhập.' };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.',
+        errors: error.errors || null,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Đăng xuất: Xóa token và user khỏi state và localStorage
+   */
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    setToken(null);
+    setUser(null);
+>>>>>>> Stashed changes
   };
 
   const value = {
     user,
     token,
+<<<<<<< Updated upstream
     isAuthenticated: !!token && !!user,
     role: user?.role || null,
     isLoading,
@@ -99,6 +181,13 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateCurrentUser,
+=======
+    isAuthenticated: !!token,
+    login,
+    register,
+    logout,
+    loading,
+>>>>>>> Stashed changes
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -107,7 +196,16 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
+<<<<<<< Updated upstream
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
+=======
+    throw new Error('useAuth phải được sử dụng bên trong AuthProvider');
+  }
+  return context;
+};
+
+export default AuthContext;
+>>>>>>> Stashed changes

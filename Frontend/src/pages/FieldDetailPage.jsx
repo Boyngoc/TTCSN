@@ -15,7 +15,9 @@ import {
   MessageSquare,
   AlertCircle,
   Loader2,
-  Tag
+  Tag,
+  CalendarDays,
+  CheckCircle2
 } from 'lucide-react';
 
 const FieldDetailPage = () => {
@@ -28,6 +30,12 @@ const FieldDetailPage = () => {
 
   // State điều khiển mở BookingModal
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+
+  // State tra cứu lịch đã đặt theo ngày (Booked Slots)
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState(todayStr);
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
     const fetchFieldData = async () => {
@@ -59,6 +67,24 @@ const FieldDetailPage = () => {
       fetchFieldData();
     }
   }, [id]);
+
+  // Tải các khung giờ đã đặt mỗi khi thay đổi ngày
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!id || !selectedDate) return;
+      setLoadingSlots(true);
+      try {
+        const res = await fieldService.getBookedSlots(id, { date: selectedDate });
+        setBookedSlots(res.data || []);
+      } catch (err) {
+        console.warn('Không thể tải lịch đã đặt:', err);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchSlots();
+  }, [id, selectedDate]);
 
   const formatPrice = (price) => {
     if (!price) return 'Liên hệ';
@@ -105,7 +131,7 @@ const FieldDetailPage = () => {
 
       {/* Main Grid: Details (Left) + Booking Sticky Box (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Image, Description, Reviews */}
+        {/* Left Column: Image, Description, Booked Slots, Reviews */}
         <div className="lg:col-span-2 space-y-8">
           {/* Hero Image */}
           <div className="relative aspect-[16/9] rounded-3xl overflow-hidden bg-slate-100 shadow-md border border-slate-200/80">
@@ -186,6 +212,66 @@ const FieldDetailPage = () => {
                 {field.description || 'Chưa có thông tin mô tả chi tiết cho sân bóng này.'}
               </p>
             </div>
+          </div>
+
+          {/* Booked Slots Inspection */}
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-bold text-lg text-slate-900">Lịch Sân Trống Theo Ngày</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-slate-500">Chọn ngày:</label>
+                <input
+                  type="date"
+                  min={todayStr}
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500">
+              Các khung giờ màu đỏ/cam là giờ đã được đặt trước. Bạn có thể chọn các khung giờ khác trong ngày để đặt sân mà không lo bị trùng lịch!
+            </p>
+
+            {loadingSlots ? (
+              <div className="py-6 text-center">
+                <Loader2 className="w-6 h-6 text-emerald-600 animate-spin mx-auto" />
+                <span className="text-xs text-slate-400 mt-2 block">Đang kiểm tra lịch trống...</span>
+              </div>
+            ) : bookedSlots.length > 0 ? (
+              <div className="space-y-3">
+                <div className="text-xs font-bold text-slate-700 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  Khung giờ đã có người giữ chỗ trong ngày {selectedDate}:
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {bookedSlots.map((slot, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center space-y-1"
+                    >
+                      <span className="text-xs font-bold text-amber-900 block">
+                        {slot.startTime?.slice(0, 5)} - {slot.endTime?.slice(0, 5)}
+                      </span>
+                      <span className="text-[10px] text-amber-700 font-medium bg-amber-100 px-2 py-0.5 rounded-full">
+                        Đã được đặt
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <p className="text-xs font-semibold text-emerald-800">
+                  Ngày {selectedDate} hiện đang còn trống nhiều khung giờ. Bạn có thể đặt lịch ngay bất cứ giờ nào!
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Reviews Section */}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
+  Building2, 
   CalendarCheck, 
   MapPin, 
   User, 
@@ -10,7 +11,8 @@ import {
   X, 
   ShieldCheck, 
   Sparkles,
-  ClipboardList
+  ClipboardList,
+  CheckSquare
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -26,6 +28,21 @@ const Navbar = () => {
   };
 
   const isActive = (path) => location.pathname === path;
+
+  // Lấy nhãn vai trò hiển thị
+  const getRoleBadge = (role) => {
+    switch (role) {
+      case 'OWNER':
+        return { label: 'Chủ Sân', bg: 'bg-amber-100 text-amber-800 border-amber-200' };
+      case 'ADMIN':
+        return { label: 'Quản Trị', bg: 'bg-purple-100 text-purple-800 border-purple-200' };
+      default:
+        return { label: 'Khách Hàng', bg: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+    }
+  };
+
+  const isOwner = user?.role === 'OWNER';
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
@@ -68,7 +85,37 @@ const Navbar = () => {
             >
               Danh Sách Sân
             </Link>
-            {isAuthenticated && (
+
+            {/* Menu cho Chủ Sân (OWNER) */}
+            {isAuthenticated && (isOwner || isAdmin) && (
+              <>
+                <Link
+                  to="/owner/fields"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/owner/fields') 
+                      ? 'bg-emerald-50 text-emerald-700 font-semibold' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <Building2 className="w-4 h-4 text-emerald-600" />
+                  Sân Của Tôi
+                </Link>
+                <Link
+                  to="/owner/bookings"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/owner/bookings') 
+                      ? 'bg-emerald-50 text-emerald-700 font-semibold' 
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <CheckSquare className="w-4 h-4 text-emerald-600" />
+                  Duyệt Đơn Đặt
+                </Link>
+              </>
+            )}
+
+            {/* Menu Đơn của tôi cho Khách Hàng (USER) */}
+            {isAuthenticated && !isOwner && (
               <Link
                 to="/my-bookings"
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -87,7 +134,7 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 pl-3 py-1 pr-3 bg-slate-100 rounded-full border border-slate-200">
+                <div className="flex items-center gap-2 pl-2 py-1 pr-3 bg-slate-50 rounded-full border border-slate-200">
                   <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs uppercase shadow-inner">
                     {user?.fullName?.charAt(0) || 'U'}
                   </div>
@@ -95,8 +142,8 @@ const Navbar = () => {
                     <span className="text-xs font-semibold text-slate-800 leading-tight max-w-[120px] truncate">
                       {user?.fullName}
                     </span>
-                    <span className="text-[10px] font-medium text-emerald-600 leading-none">
-                      {user?.role}
+                    <span className="text-[9px] font-bold text-emerald-600 uppercase">
+                      {getRoleBadge(user?.role).label}
                     </span>
                   </div>
                 </div>
@@ -104,7 +151,7 @@ const Navbar = () => {
                 <button
                   onClick={handleLogout}
                   title="Đăng xuất"
-                  className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -113,13 +160,13 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
                 >
                   Đăng Nhập
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm shadow-emerald-600/30 transition-all hover:shadow-md"
+                  className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm shadow-emerald-600/30 transition-all hover:shadow-md"
                 >
                   Đăng Ký
                 </Link>
@@ -156,7 +203,28 @@ const Navbar = () => {
           >
             Danh Sách Sân
           </Link>
-          {isAuthenticated && (
+
+          {/* Mobile Owner Links */}
+          {isAuthenticated && (isOwner || isAdmin) && (
+            <>
+              <Link
+                to="/owner/fields"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-base font-medium text-emerald-700 hover:bg-emerald-50"
+              >
+                Sân Của Tôi
+              </Link>
+              <Link
+                to="/owner/bookings"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-base font-medium text-emerald-700 hover:bg-emerald-50"
+              >
+                Duyệt Đơn Đặt
+              </Link>
+            </>
+          )}
+
+          {isAuthenticated && !isOwner && (
             <Link
               to="/my-bookings"
               onClick={() => setMobileMenuOpen(false)}
@@ -171,7 +239,9 @@ const Navbar = () => {
               <div className="flex items-center justify-between py-2">
                 <div>
                   <p className="font-semibold text-slate-900 text-sm">{user?.fullName}</p>
-                  <span className="text-xs text-emerald-600 font-medium">Vai trò: {user?.role}</span>
+                  <span className="text-xs text-emerald-600 font-medium">
+                    Vai trò: {getRoleBadge(user?.role).label}
+                  </span>
                 </div>
                 <button
                   onClick={handleLogout}

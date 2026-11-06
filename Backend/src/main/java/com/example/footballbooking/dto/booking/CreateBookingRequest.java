@@ -23,11 +23,11 @@ public record CreateBookingRequest(
         LocalDate bookingDate,
 
         @NotNull(message = "Vui lòng chọn giờ bắt đầu")
-        @JsonFormat(pattern = "HH:mm[:ss]")
+        @JsonFormat(pattern = "HH:mm")
         LocalTime startTime,
 
         @NotNull(message = "Vui lòng chọn giờ kết thúc")
-        @JsonFormat(pattern = "HH:mm[:ss]")
+        @JsonFormat(pattern = "HH:mm")
         LocalTime endTime
 ) {
 }

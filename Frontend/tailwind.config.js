@@ -1,33 +1,21 @@
 /** @type {import('tailwindcss').Config} */
-
-// Bảng màu xanh cỏ dùng chung cho toàn bộ giao diện.
-const turf = {
-  50: '#f0fdf4',
-  100: '#dcfce7',
-  200: '#bbf7d0',
-  300: '#86efac',
-  400: '#4ade80',
-  500: '#22c55e',
-  600: '#16a34a',
-  700: '#15803d',
-  800: '#166534',
-  900: '#14532d',
-};
-
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        turf,
-        // Bí danh của turf: FieldCard và FieldsPage đang dùng tên pitch-*
-        pitch: turf,
+        pitch: {
+          50: '#eef8f1',
+          100: '#d9efdf',
+          300: '#7ec49a',
+          500: '#16834a',
+          600: '#116b3b',
+          700: '#0d5631',
+          900: '#102c20',
+        },
       },
       boxShadow: {
-        card: '0 10px 30px -12px rgb(15 23 42 / 0.25)',
+        card: '0 16px 48px rgba(16, 44, 32, 0.08)',
       },
     },
   },

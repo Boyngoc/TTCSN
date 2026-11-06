@@ -6,9 +6,8 @@ chưa tách Microservices (không dùng Eureka/Gateway/Kafka/Docker ở giai đo
 
 ## Luồng xử lý một request
 ```
-Frontend (React 18 + Vite)
+Next.js (Frontend)
    │  HTTP + JSON
-   │  Authorization: Bearer <JWT>
    ▼
 Controller   → nhận request, validate đầu vào, KHÔNG chứa business logic
    ▼
@@ -40,18 +39,6 @@ MySQL
 | `security` | JWT, filter xác thực |
 | `enums` | Role, các loại Status |
 
-## Các module đã hiện thực
-| Module | Thành phần chính |
-|---|---|
-| Nền tảng | `FootballBookingApplication`, `ApiResponse`, `PageResponse`, `OpenApiConfig`, `HealthController` |
-| Lỗi tập trung | `GlobalExceptionHandler` + `BadRequestException`, `UnauthorizedException`, `ForbiddenException`, `ResourceNotFoundException`, `ConflictException` |
-| Bảo mật | `SecurityConfig`, `JwtService`, `JwtAuthenticationFilter`, `CustomUserDetailsService`, `SecurityUtils`, `RestAuthenticationEntryPoint` (401), `RestAccessDeniedHandler` (403) |
-| Auth & User | `AuthServiceImpl` (đăng ký / đăng nhập), `UserServiceImpl` (hồ sơ) |
-| Sân | `FieldServiceImpl`, `FieldTypeServiceImpl`, `FieldSpecifications` (tìm kiếm động) |
-| Đặt sân | `BookingServiceImpl` (tự tính tiền, chống trùng lịch bằng khóa bi quan) |
-| Đánh giá | `ReviewServiceImpl` |
-| Quản trị | `AdminServiceImpl`, `StatisticsServiceImpl` |
-| Dữ liệu mẫu | `DataSeeder` (chỉ chạy ở profile `dev`) |
-
-Chưa có: tầng Frontend, endpoint tra giờ trống (availability), bảng khung giờ cố định,
-cổng thanh toán thật. Danh sách đầy đủ xem mục "Việc còn lại" trong [../../README.md](../../README.md).
+## Phase 1 đã hiện thực
+`FootballBookingApplication`, `HealthController`, `ApiResponse`, `HealthResponse`,
+`OpenApiConfig`, nhóm exception + `GlobalExceptionHandler`.

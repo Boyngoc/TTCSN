@@ -88,8 +88,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/health", "/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/field-types").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/fields", "/api/fields/*", "/api/fields/*/reviews", "/api/fields/*/booked-slots").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/settings").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/fields", "/api/fields/*", "/api/fields/*/reviews").permitAll()
                         // ----- Chặn thô theo vai trò -----
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/owner/**").hasRole("OWNER")

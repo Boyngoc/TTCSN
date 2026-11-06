@@ -8,14 +8,10 @@ import java.time.LocalDateTime;
 public record ReviewResponse(
         Long id,
         Long fieldId,
-        String fieldName,
         Long userId,
         String userFullName,
-        String userEmail,
         Integer rating,
         String comment,
-        Integer editCount,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime createdAt
 ) {
 }

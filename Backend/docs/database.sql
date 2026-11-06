@@ -17,7 +17,6 @@ CREATE DATABASE IF NOT EXISTS football_booking
 USE football_booking;
 
 -- Xóa theo thứ tự ngược khóa ngoại để có thể chạy lại nhiều lần
-DROP TABLE IF EXISTS system_settings;
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS bookings;
@@ -67,9 +66,7 @@ CREATE TABLE fields (
     address        VARCHAR(255)  NOT NULL,
     description    VARCHAR(1000),
     price_per_hour DECIMAL(12,2) NOT NULL,
-    image_url      LONGTEXT,
-    phone          VARCHAR(20),
-    map_link       VARCHAR(1000),
+    image_url      VARCHAR(500),
     status         VARCHAR(20)   NOT NULL,
     created_at     DATETIME(6),
     updated_at     DATETIME(6),
@@ -103,25 +100,6 @@ CREATE TABLE bookings (
 
 -- Index hỗ trợ kiểm tra trùng lịch theo sân + ngày
 CREATE INDEX idx_booking_field_date ON bookings (field_id, booking_date);
-
--- ------------------------------------------------------------------
--- Bảng ô giữ chỗ theo khung giờ 1 tiếng (chốt chặn chống trùng ở tầng DB)
--- active_key = 1 khi đang giữ chỗ, NULL khi đã hủy/từ chối.
--- UNIQUE gồm cả active_key: do SQL coi các NULL là khác nhau nên ô đã hủy
--- không chặn đặt lại, còn mỗi (sân, ngày, giờ) chỉ có tối đa 1 ô đang hoạt động.
--- ------------------------------------------------------------------
-CREATE TABLE booking_slots (
-    id           BIGINT NOT NULL AUTO_INCREMENT,
-    field_id     BIGINT NOT NULL,
-    booking_id   BIGINT NOT NULL,
-    booking_date DATE   NOT NULL,
-    slot_hour    TIME   NOT NULL,
-    active_key   INT,
-    PRIMARY KEY (id),
-    CONSTRAINT uk_slot_field_date_hour_active UNIQUE (field_id, booking_date, slot_hour, active_key),
-    CONSTRAINT fk_slots_field   FOREIGN KEY (field_id)   REFERENCES fields(id),
-    CONSTRAINT fk_slots_booking FOREIGN KEY (booking_id) REFERENCES bookings(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------
 -- Bảng đánh giá (mỗi booking chỉ đánh giá 1 lần)
@@ -161,16 +139,6 @@ CREATE TABLE payments (
     CONSTRAINT chk_payments_status CHECK (status IN ('PENDING','PAID','FAILED','REFUNDED'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------------------
--- Bảng cài đặt hệ thống (Cấu hình thương hiệu, hotline, logo, chân trang)
--- ------------------------------------------------------------------
-CREATE TABLE system_settings (
-    setting_key   VARCHAR(100) NOT NULL,
-    setting_value LONGTEXT,
-    updated_at    DATETIME(6),
-    PRIMARY KEY (setting_key)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==========================================================================
 -- DỮ LIỆU MẪU
 -- Mật khẩu đã băm BCrypt. Đăng nhập tương ứng:
@@ -189,14 +157,12 @@ INSERT INTO users (full_name, email, password, phone, role, status, created_at, 
     ('Người dùng demo','user@footballbooking.com', '$2a$10$yGvPkv2ZV4PxOa6EC3g9H.s4A2HWFkvZLkUDudI/Bj3Wv5GVe/tqS', '0900000000', 'USER',  'ACTIVE', NOW(6), NOW(6));
 
 -- Sân mẫu thuộc chủ sân demo, loại "Sân 7 người" (dùng INSERT..SELECT để lấy đúng khóa ngoại)
-INSERT INTO fields (owner_id, field_type_id, name, address, description, price_per_hour, phone, map_link, status, created_at, updated_at)
+INSERT INTO fields (owner_id, field_type_id, name, address, description, price_per_hour, status, created_at, updated_at)
 SELECT u.id, ft.id,
        'Sân bóng Ngôi Sao',
        '123 Nguyễn Trãi, Hà Nội',
        'Sân cỏ nhân tạo, có mái che và đèn chiếu sáng',
        300000.00,
-       '0900000000',
-       'https://maps.google.com/?q=123+Nguyen+Trai+Ha+Noi',
        'ACTIVE',
        NOW(6), NOW(6)
 FROM users u

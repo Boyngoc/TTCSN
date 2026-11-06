@@ -14,16 +14,12 @@ public final class ReviewMapper {
     public static ReviewResponse toResponse(Review review) {
         return new ReviewResponse(
                 review.getId(),
-                review.getField() != null ? review.getField().getId() : null,
-                review.getField() != null ? review.getField().getName() : null,
-                review.getUser() != null ? review.getUser().getId() : null,
-                review.getUser() != null ? review.getUser().getFullName() : null,
-                review.getUser() != null ? review.getUser().getEmail() : null,
+                review.getField().getId(),
+                review.getUser().getId(),
+                review.getUser().getFullName(),
                 review.getRating(),
                 review.getComment(),
-                review.getEditCount(),
-                review.getCreatedAt(),
-                review.getUpdatedAt()
+                review.getCreatedAt()
         );
     }
 }

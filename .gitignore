@@ -30,3 +30,6 @@ Thumbs.db
 
 # Repo backend riêng, được clone lồng vào đây — không thuộc repo này
 football-booking-service/
+
+# Quyển báo cáo đồ án — tài liệu cá nhân, không commit lên repo code
+BaoCao_Chuong3.docx

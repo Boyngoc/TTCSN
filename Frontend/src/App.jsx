@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -9,11 +9,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import HomePage from './pages/HomePage';
 import FieldListPage from './pages/FieldListPage';
-import FieldsPage from './pages/FieldsPage';
 import FieldDetailPage from './pages/FieldDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import MyBookingsPage from './pages/MyBookingsPage';
+import OwnerFieldsPage from './pages/OwnerFieldsPage';
+import OwnerBookingsPage from './pages/OwnerBookingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,24 +51,46 @@ function App() {
             <Navbar />
             <main className="flex-1">
               <Routes>
-                {/* TUẦN 2 & 3: Trang chủ & Danh sách sân */}
+                {/* TUẦN 2 & 3: Trang chủ & Danh sách sân (Linh nhận từ Quân) */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/fields" element={<FieldListPage />} />
+                <Route path="/san" element={<Navigate to="/fields" replace />} />
 
-                {/* Danh sách sân có bộ lọc, lấy dữ liệu qua React Query */}
-                <Route path="/san" element={<FieldsPage />} />
-
-                {/* TUẦN 4: Chi tiết sân & luồng Đặt sân */}
+                {/* TUẦN 4 & 6: Chi tiết sân bóng */}
                 <Route path="/fields/:id" element={<FieldDetailPage />} />
 
-                {/* TUẦN 5: Xác thực Auth & Protected routes */}
+                {/* TUẦN 5: Xác thực Auth */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+
+                {/* Đơn đặt sân của người dùng (Phần của Vũ) */}
                 <Route
                   path="/my-bookings"
                   element={
                     <ProtectedRoute>
                       <MyBookingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* TUẦN 7: Giao diện Chủ Sân (Owner UI - Nhiệm vụ của Linh) */}
+                <Route
+                  path="/owner"
+                  element={<Navigate to="/owner/fields" replace />}
+                />
+                <Route
+                  path="/owner/fields"
+                  element={
+                    <ProtectedRoute allowedRoles={['OWNER', 'ADMIN']}>
+                      <OwnerFieldsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/owner/bookings"
+                  element={
+                    <ProtectedRoute allowedRoles={['OWNER', 'ADMIN']}>
+                      <OwnerBookingsPage />
                     </ProtectedRoute>
                   }
                 />

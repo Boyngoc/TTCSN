@@ -27,3 +27,6 @@ yarn-error.log*
 Thumbs.db
 *.swp
 *~
+
+# Repo backend riêng, được clone lồng vào đây — không thuộc repo này
+football-booking-service/

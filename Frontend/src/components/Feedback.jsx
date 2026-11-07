@@ -1,36 +1,18 @@
-import React from 'react';
-import { AlertCircle, Inbox, RefreshCw } from 'lucide-react';
+import { AlertCircle, LoaderCircle } from 'lucide-react'
 
-export const Loading = ({ label = 'Đang tải dữ liệu...' }) => (
-  <div className="flex flex-col items-center justify-center gap-3 py-16 text-slate-500">
-    <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-slate-200 border-t-emerald-600" />
-    <p className="text-sm font-medium">{label}</p>
-  </div>
-);
+export function Loading({ label = 'Đang tải dữ liệu...' }) {
+  return <div className="flex items-center justify-center gap-3 py-16 text-sm font-medium text-slate-500"><LoaderCircle className="animate-spin text-pitch-600" size={20} />{label}</div>
+}
 
-export const ErrorMessage = ({ message = 'Đã có lỗi xảy ra, vui lòng thử lại.', onRetry }) => (
-  <div className="flex flex-col items-center justify-center gap-3 rounded-3xl border border-red-100 bg-red-50 px-6 py-12 text-center">
-    <AlertCircle className="text-red-500" size={28} />
-    <p className="max-w-md text-sm font-medium text-red-700">{message}</p>
-    {onRetry && (
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-1 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-red-700"
-      >
-        <RefreshCw size={15} />
-        Thử lại
-      </button>
-    )}
-  </div>
-);
+export function ErrorMessage({ message, onRetry }) {
+  return <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-800"><div className="flex items-start gap-3"><AlertCircle className="mt-0.5 shrink-0" size={19} /><p className="text-sm">{message}</p></div>{onRetry && <button className="mt-3 text-sm font-bold underline" onClick={onRetry}>Thử tải lại</button>}</div>
+}
 
-export const EmptyState = ({ title = 'Không tìm thấy dữ liệu', children }) => (
-  <div className="flex flex-col items-center justify-center rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center">
-    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-      <Inbox size={26} />
-    </div>
-    <h3 className="mb-1 text-base font-bold text-slate-900">{title}</h3>
-    {children && <p className="max-w-sm text-sm leading-relaxed text-slate-500">{children}</p>}
-  </div>
-);
+export function EmptyState({ title = 'Chưa có dữ liệu', children }) {
+  return <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"><p className="font-bold text-slate-800">{title}</p>{children && <p className="mt-2 text-sm text-slate-500">{children}</p>}</div>
+}
+
+export function Notice({ children, kind = 'success' }) {
+  const classes = kind === 'error' ? 'border-red-200 bg-red-50 text-red-800' : 'border-pitch-100 bg-pitch-50 text-pitch-700'
+  return <div className={`rounded-xl border px-4 py-3 text-sm ${classes}`} role="status">{children}</div>
+}

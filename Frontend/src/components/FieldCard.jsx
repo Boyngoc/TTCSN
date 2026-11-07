@@ -5,7 +5,7 @@ import { formatPrice } from '../utils/format.js'
 export default function FieldCard({ field }) {
   return (
     <article className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-card">
-      <Link to={`/fields/${field.id}`} className="block">
+      <Link to={`/san/${field.id}`} className="block">
         <div className="relative h-52 overflow-hidden bg-gradient-to-br from-pitch-700 via-pitch-600 to-emerald-400">
           {field.imageUrl && <img src={field.imageUrl} alt={field.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
           {!field.imageUrl && <div className="pitch-lines flex h-full items-center justify-center"><span className="rounded-full border border-white/50 bg-white/15 px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white">Sân bóng</span></div>}

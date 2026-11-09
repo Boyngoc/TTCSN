@@ -3,10 +3,13 @@ package com.example.footballbooking.service;
 import com.example.footballbooking.dto.booking.BookingResponse;
 import com.example.footballbooking.dto.booking.CreateBookingRequest;
 import com.example.footballbooking.entity.Booking;
+import com.example.footballbooking.dto.PageResponse;
 import com.example.footballbooking.entity.Field;
+import com.example.footballbooking.entity.Payment;
 import com.example.footballbooking.entity.User;
 import com.example.footballbooking.enums.ActiveStatus;
 import com.example.footballbooking.enums.BookingStatus;
+import com.example.footballbooking.enums.PaymentStatus;
 import com.example.footballbooking.exception.BadRequestException;
 import com.example.footballbooking.exception.ConflictException;
 import com.example.footballbooking.exception.ForbiddenException;
@@ -14,6 +17,7 @@ import com.example.footballbooking.exception.ResourceNotFoundException;
 import com.example.footballbooking.repository.BookingRepository;
 import com.example.footballbooking.repository.FieldRepository;
 import com.example.footballbooking.repository.PaymentRepository;
+import com.example.footballbooking.repository.ReviewRepository;
 import com.example.footballbooking.repository.UserRepository;
 import com.example.footballbooking.service.impl.BookingServiceImpl;
 import org.junit.jupiter.api.DisplayName;
@@ -22,15 +26,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -52,6 +60,8 @@ class BookingServiceImplTest {
     private UserRepository userRepository;
     @Mock
     private PaymentRepository paymentRepository;
+    @Mock
+    private ReviewRepository reviewRepository;
 
     @InjectMocks
     private BookingServiceImpl bookingService;
@@ -84,6 +94,22 @@ class BookingServiceImplTest {
         return new CreateBookingRequest(FIELD_ID, TOMORROW, start, end);
     }
 
+    /** Booking của USER_ID trên sân của chủ sân id 99. */
+    private Booking sampleBooking(Long id, BookingStatus status) {
+        Booking booking = new Booking();
+        booking.setId(id);
+        booking.setStatus(status);
+        booking.setUser(sampleUser());
+        booking.setField(sampleField(ActiveStatus.ACTIVE, "300000"));
+        return booking;
+    }
+
+    private Payment samplePayment(PaymentStatus status) {
+        Payment payment = new Payment();
+        payment.setStatus(status);
+        return payment;
+    }
+
     @Test
     @DisplayName("Đặt sân hợp lệ: tự tính đúng tiền, trạng thái PENDING, có tạo thanh toán")
     void create_validBooking_success() {
@@ -99,6 +125,7 @@ class BookingServiceImplTest {
         // 300.000đ/giờ × 2 giờ = 600.000đ (Backend tự tính)
         assertThat(response.totalPrice()).isEqualByComparingTo("600000");
         assertThat(response.status()).isEqualTo(BookingStatus.PENDING);
+        assertThat(response.reviewed()).isFalse();
         verify(paymentRepository).save(any());
     }
 
@@ -168,6 +195,59 @@ class BookingServiceImplTest {
         BookingResponse response = bookingService.cancel(USER_ID, 5L);
 
         assertThat(response.status()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("Hủy lượt đặt chưa thanh toán → payment PENDING chuyển FAILED (không thu nữa)")
+    void cancel_pendingPayment_marksFailed() {
+        Payment payment = samplePayment(PaymentStatus.PENDING);
+        when(bookingRepository.findById(5L)).thenReturn(Optional.of(sampleBooking(5L, BookingStatus.PENDING)));
+        when(paymentRepository.findByBookingId(5L)).thenReturn(Optional.of(payment));
+
+        bookingService.cancel(USER_ID, 5L);
+
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
+    }
+
+    @Test
+    @DisplayName("Hủy lượt đặt đã thanh toán → payment PAID chuyển REFUNDED")
+    void cancel_paidPayment_marksRefunded() {
+        Payment payment = samplePayment(PaymentStatus.PAID);
+        when(bookingRepository.findById(5L)).thenReturn(Optional.of(sampleBooking(5L, BookingStatus.CONFIRMED)));
+        when(paymentRepository.findByBookingId(5L)).thenReturn(Optional.of(payment));
+
+        bookingService.cancel(USER_ID, 5L);
+
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+    }
+
+    @Test
+    @DisplayName("Chủ sân từ chối lượt đặt → booking REJECTED, payment PENDING chuyển FAILED")
+    void reject_pendingPayment_marksFailed() {
+        Payment payment = samplePayment(PaymentStatus.PENDING);
+        when(bookingRepository.findById(5L)).thenReturn(Optional.of(sampleBooking(5L, BookingStatus.PENDING)));
+        when(paymentRepository.findByBookingId(5L)).thenReturn(Optional.of(payment));
+
+        BookingResponse response = bookingService.reject(99L, 5L);
+
+        assertThat(response.status()).isEqualTo(BookingStatus.REJECTED);
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.FAILED);
+    }
+
+    @Test
+    @DisplayName("Danh sách lượt đặt đánh dấu đúng booking đã được đánh giá (1 truy vấn cho cả trang)")
+    void getMyBookings_marksReviewedBookings() {
+        Booking reviewedBooking = sampleBooking(1L, BookingStatus.COMPLETED);
+        Booking notReviewedBooking = sampleBooking(2L, BookingStatus.CONFIRMED);
+        when(bookingRepository.findByUserIdOrderByCreatedAtDesc(eq(USER_ID), any()))
+                .thenReturn(new PageImpl<>(List.of(reviewedBooking, notReviewedBooking), PageRequest.of(0, 10), 2));
+        when(reviewRepository.findReviewedBookingIds(List.of(1L, 2L))).thenReturn(Set.of(1L));
+
+        PageResponse<BookingResponse> page = bookingService.getMyBookings(USER_ID, PageRequest.of(0, 10));
+
+        assertThat(page.content()).extracting(BookingResponse::id, BookingResponse::reviewed)
+                .containsExactly(tuple(1L, true), tuple(2L, false));
+        verify(reviewRepository, never()).existsByBookingId(anyLong());
     }
 
     @Test

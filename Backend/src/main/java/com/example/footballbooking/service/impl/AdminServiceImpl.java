@@ -4,6 +4,7 @@ import com.example.footballbooking.dto.PageResponse;
 import com.example.footballbooking.dto.booking.BookingResponse;
 import com.example.footballbooking.dto.field.FieldResponse;
 import com.example.footballbooking.dto.user.UserResponse;
+import com.example.footballbooking.entity.Booking;
 import com.example.footballbooking.entity.Field;
 import com.example.footballbooking.entity.User;
 import com.example.footballbooking.enums.ActiveStatus;
@@ -15,11 +16,16 @@ import com.example.footballbooking.mapper.FieldMapper;
 import com.example.footballbooking.mapper.UserMapper;
 import com.example.footballbooking.repository.BookingRepository;
 import com.example.footballbooking.repository.FieldRepository;
+import com.example.footballbooking.repository.ReviewRepository;
 import com.example.footballbooking.repository.UserRepository;
 import com.example.footballbooking.service.AdminService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Hiện thực nghiệp vụ quản trị hệ thống.
@@ -30,13 +36,16 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final FieldRepository fieldRepository;
     private final BookingRepository bookingRepository;
+    private final ReviewRepository reviewRepository;
 
     public AdminServiceImpl(UserRepository userRepository,
                             FieldRepository fieldRepository,
-                            BookingRepository bookingRepository) {
+                            BookingRepository bookingRepository,
+                            ReviewRepository reviewRepository) {
         this.userRepository = userRepository;
         this.fieldRepository = fieldRepository;
         this.bookingRepository = bookingRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -60,7 +69,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<BookingResponse> getBookings(Pageable pageable) {
-        return PageResponse.from(bookingRepository.findAllByOrderByCreatedAtDesc(pageable), BookingMapper::toResponse);
+        Page<Booking> page = bookingRepository.findAllByOrderByCreatedAtDesc(pageable);
+        List<Long> ids = page.getContent().stream().map(Booking::getId).toList();
+        Set<Long> reviewed = ids.isEmpty() ? Set.of() : reviewRepository.findReviewedBookingIds(ids);
+        return BookingMapper.toPageResponse(page, reviewed);
     }
 
     @Override

@@ -9,7 +9,9 @@ import { getErrorMessage } from '../services/api/client.js'
 import { formatDate, formatPrice, statusLabel } from '../utils/format.js'
 
 const canCancel = (status) => ['PENDING', 'CONFIRMED'].includes(status)
-const canReview = (status) => ['CONFIRMED', 'COMPLETED'].includes(status)
+const reviewableStatus = (status) => ['CONFIRMED', 'COMPLETED'].includes(status)
+// Mỗi booking chỉ được đánh giá 1 lần: backend trả cờ `reviewed` để ẩn nút sau khi đã đánh giá
+const canReview = (booking) => reviewableStatus(booking.status) && !booking.reviewed
 
 function ReviewForm({ booking, onDone }) {
   const [rating, setRating] = useState('5')
@@ -46,7 +48,8 @@ export default function BookingsPage() {
       <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4">
         <Link to={`/luot-dat/${booking.id}`} className="btn-secondary"><Eye size={16} />Chi tiết đơn</Link>
         {canCancel(booking.status) && <button className="btn-danger" disabled={cancel.isPending} onClick={() => { if (window.confirm('Bạn có chắc muốn hủy lượt đặt này?')) cancel.mutate(booking.id, { onSuccess: () => setMessage(`Đã gửi yêu cầu hủy đơn #${booking.id}.`) }) }}><XCircle size={16} />Hủy lượt đặt</button>}
-        {canReview(booking.status) && <button className="btn-secondary" onClick={() => setReviewing(reviewing === booking.id ? null : booking.id)}><Star size={16} />Viết đánh giá</button>}
+        {canReview(booking) && <button className="btn-secondary" onClick={() => setReviewing(reviewing === booking.id ? null : booking.id)}><Star size={16} />Viết đánh giá</button>}
+        {booking.reviewed && <span className="inline-flex items-center gap-2 self-center text-sm font-bold text-amber-600"><Star size={16} fill="currentColor" />Đã đánh giá</span>}
         <Link to={`/san/${booking.fieldId}`} className="btn-secondary"><MapPin size={16} />Xem sân</Link>
       </div>
       {reviewing === booking.id && <ReviewForm booking={booking} onDone={() => { setReviewing(null); setMessage('Cảm ơn bạn đã gửi đánh giá.') }} />}

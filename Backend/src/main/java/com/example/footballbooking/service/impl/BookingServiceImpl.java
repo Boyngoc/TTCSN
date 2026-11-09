@@ -19,6 +19,7 @@ import com.example.footballbooking.mapper.BookingMapper;
 import com.example.footballbooking.repository.BookingRepository;
 import com.example.footballbooking.repository.FieldRepository;
 import com.example.footballbooking.repository.PaymentRepository;
+import com.example.footballbooking.repository.ReviewRepository;
 import com.example.footballbooking.repository.UserRepository;
 import com.example.footballbooking.service.BookingService;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Hiện thực nghiệp vụ đặt sân.
@@ -49,15 +51,18 @@ public class BookingServiceImpl implements BookingService {
     private final FieldRepository fieldRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final ReviewRepository reviewRepository;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               FieldRepository fieldRepository,
                               UserRepository userRepository,
-                              PaymentRepository paymentRepository) {
+                              PaymentRepository paymentRepository,
+                              ReviewRepository reviewRepository) {
         this.bookingRepository = bookingRepository;
         this.fieldRepository = fieldRepository;
         this.userRepository = userRepository;
         this.paymentRepository = paymentRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -111,7 +116,8 @@ public class BookingServiceImpl implements BookingService {
         payment.setStatus(PaymentStatus.PENDING);
         paymentRepository.save(payment);
 
-        return BookingMapper.toResponse(saved);
+        // Booking vừa tạo chắc chắn chưa có đánh giá
+        return BookingMapper.toResponse(saved, false);
     }
 
     @Override
@@ -124,14 +130,14 @@ public class BookingServiceImpl implements BookingService {
         if (!isAdmin && !isBookingOwner && !isFieldOwner) {
             throw new ForbiddenException("Bạn không có quyền xem lượt đặt này");
         }
-        return BookingMapper.toResponse(booking);
+        return toResponse(booking);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<BookingResponse> getMyBookings(Long userId, Pageable pageable) {
         Page<Booking> page = bookingRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
-        return PageResponse.from(page, BookingMapper::toResponse);
+        return toPageResponse(page);
     }
 
     @Override
@@ -145,13 +151,8 @@ public class BookingServiceImpl implements BookingService {
             throw new ConflictException("Không thể hủy lượt đặt ở trạng thái hiện tại");
         }
         booking.setStatus(BookingStatus.CANCELLED);
-        // Nếu đã thanh toán thì đánh dấu hoàn tiền
-        paymentRepository.findByBookingId(bookingId).ifPresent(payment -> {
-            if (payment.getStatus() == PaymentStatus.PAID) {
-                payment.setStatus(PaymentStatus.REFUNDED);
-            }
-        });
-        return BookingMapper.toResponse(booking);
+        closePayment(bookingId);
+        return toResponse(booking);
     }
 
     @Override
@@ -165,7 +166,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.CONFIRMED);
         paymentRepository.findByBookingId(bookingId)
                 .ifPresent(payment -> payment.setStatus(PaymentStatus.PAID));
-        return BookingMapper.toResponse(booking);
+        return toResponse(booking);
     }
 
     @Override
@@ -177,17 +178,42 @@ public class BookingServiceImpl implements BookingService {
             throw new ConflictException("Chỉ có thể từ chối lượt đặt đang chờ (PENDING)");
         }
         booking.setStatus(BookingStatus.REJECTED);
-        return BookingMapper.toResponse(booking);
+        closePayment(bookingId);
+        return toResponse(booking);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<BookingResponse> getOwnerBookings(Long ownerId, Pageable pageable) {
         Page<Booking> page = bookingRepository.findByFieldOwnerIdOrderByCreatedAtDesc(ownerId, pageable);
-        return PageResponse.from(page, BookingMapper::toResponse);
+        return toPageResponse(page);
     }
 
     // ============================ Hàm hỗ trợ nội bộ ============================
+
+    /**
+     * Khép lại bản ghi thanh toán khi lượt đặt không còn hiệu lực (bị hủy hoặc bị từ chối):
+     * đã thu tiền (PAID) → hoàn tiền (REFUNDED); chưa thu (PENDING) → không thu nữa (FAILED).
+     */
+    private void closePayment(Long bookingId) {
+        paymentRepository.findByBookingId(bookingId).ifPresent(payment -> {
+            if (payment.getStatus() == PaymentStatus.PAID) {
+                payment.setStatus(PaymentStatus.REFUNDED);
+            } else if (payment.getStatus() == PaymentStatus.PENDING) {
+                payment.setStatus(PaymentStatus.FAILED);
+            }
+        });
+    }
+
+    private BookingResponse toResponse(Booking booking) {
+        return BookingMapper.toResponse(booking, reviewRepository.existsByBookingId(booking.getId()));
+    }
+
+    private PageResponse<BookingResponse> toPageResponse(Page<Booking> page) {
+        List<Long> ids = page.getContent().stream().map(Booking::getId).toList();
+        Set<Long> reviewed = ids.isEmpty() ? Set.of() : reviewRepository.findReviewedBookingIds(ids);
+        return BookingMapper.toPageResponse(page, reviewed);
+    }
 
     private void validateTime(CreateBookingRequest request) {
         if (request.bookingDate().isBefore(LocalDate.now())) {

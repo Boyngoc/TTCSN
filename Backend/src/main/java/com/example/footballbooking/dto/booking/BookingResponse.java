@@ -29,6 +29,9 @@ public record BookingResponse(
 
         BigDecimal totalPrice,
         BookingStatus status,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+
+        /** Booking đã có đánh giá hay chưa — Frontend dựa vào đây để ẩn nút "Viết đánh giá". */
+        boolean reviewed
 ) {
 }

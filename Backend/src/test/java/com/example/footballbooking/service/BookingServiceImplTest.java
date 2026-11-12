@@ -94,12 +94,28 @@ class BookingServiceImplTest {
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(sampleUser()));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        BookingResponse response = bookingService.create(USER_ID, request(LocalTime.of(18, 0), LocalTime.of(20, 0)));
+        BookingResponse response = bookingService.create(USER_ID, request(LocalTime.of(14, 0), LocalTime.of(16, 0)));
 
-        // 300.000đ/giờ × 2 giờ = 600.000đ (Backend tự tính)
+        // 300.000đ/giờ × 2 giờ = 600.000đ (Backend tự tính khung giờ thường)
         assertThat(response.totalPrice()).isEqualByComparingTo("600000");
         assertThat(response.status()).isEqualTo(BookingStatus.PENDING);
         verify(paymentRepository).save(any());
+    }
+
+    @Test
+    @DisplayName("Đặt sân khung giờ cao điểm 17h00 - 21h30: tự tính theo 350.000đ/giờ")
+    void create_peakHoursBooking_calculatesPeakPrice() {
+        when(fieldRepository.findByIdForUpdate(FIELD_ID))
+                .thenReturn(Optional.of(sampleField(ActiveStatus.ACTIVE, "300000")));
+        when(bookingRepository.existsOverlappingBooking(eq(FIELD_ID), any(), any(), any(), any()))
+                .thenReturn(false);
+        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(sampleUser()));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Ca 17:00 - 18:30 (1.5 giờ) × 350.000đ = 525.000đ
+        BookingResponse response = bookingService.create(USER_ID, request(LocalTime.of(17, 0), LocalTime.of(18, 30)));
+
+        assertThat(response.totalPrice()).isEqualByComparingTo("525000");
     }
 
     @Test

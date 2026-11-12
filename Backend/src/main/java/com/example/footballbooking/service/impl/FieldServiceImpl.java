@@ -85,6 +85,8 @@ public class FieldServiceImpl implements FieldService {
         field.setDescription(request.description());
         field.setPricePerHour(request.pricePerHour());
         field.setImageUrl(request.imageUrl());
+        field.setPhone(request.phone());
+        field.setMapLink(request.mapLink());
         field.setStatus(ActiveStatus.ACTIVE);
 
         return FieldMapper.toResponse(fieldRepository.save(field));
@@ -103,6 +105,8 @@ public class FieldServiceImpl implements FieldService {
         field.setDescription(request.description());
         field.setPricePerHour(request.pricePerHour());
         field.setImageUrl(request.imageUrl());
+        field.setPhone(request.phone());
+        field.setMapLink(request.mapLink());
         field.setStatus(request.status());
 
         return FieldMapper.toResponse(fieldRepository.save(field));

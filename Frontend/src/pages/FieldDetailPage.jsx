@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Clock, MapPin, Star } from 'lucide-react'
+import { ArrowLeft, Check, Clock, ExternalLink, MapPin, Phone, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
@@ -76,7 +76,7 @@ export default function FieldDetailPage() {
           {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="h-[340px] w-full object-cover sm:h-[460px]" /> : <div className="pitch-lines grid h-[340px] place-items-center sm:h-[460px]"><span className="rounded-full border border-white/50 bg-white/10 px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white">Sân Nhà</span></div>}
         </div>
         <div className="mt-7"><div className="flex flex-wrap items-center gap-3"><span className="rounded-full bg-pitch-50 px-3 py-1 text-xs font-bold text-pitch-700">{item.fieldType?.name || 'Sân bóng'}</span><span className={`rounded-full px-3 py-1 text-xs font-bold ${item.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{item.status === 'ACTIVE' ? 'Đang nhận đặt' : 'Tạm ngưng'}</span></div>
-          <h1 className="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">{item.name}</h1><p className="mt-3 flex items-center gap-2 text-slate-500"><MapPin size={18} />{item.address}</p>
+          <h1 className="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">{item.name}</h1><div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-slate-500"><p className="flex items-center gap-2"><MapPin size={18} />{item.address}</p>{item.phone && <a href={`tel:${item.phone}`} className="flex items-center gap-2 font-semibold text-pitch-700 hover:underline"><Phone size={16} />{item.phone}</a>}{item.mapLink?.startsWith('http') && <a href={item.mapLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 font-semibold text-pitch-700 hover:underline"><ExternalLink size={16} />Xem trên bản đồ</a>}</div>
           <p className="mt-5 whitespace-pre-line leading-7 text-slate-600">{item.description || 'Chủ sân chưa bổ sung mô tả cho sân này.'}</p>
           <div className="mt-6 flex flex-wrap gap-6 border-y border-slate-200 py-5"><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Giá thuê theo giờ</p><p className="mt-1 text-2xl font-black text-pitch-700">{formatPrice(item.pricePerHour)}</p></div>{item.averageRating != null && <div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Đánh giá</p><p className="mt-1 flex items-center gap-1 text-xl font-black text-amber-600"><Star size={18} fill="currentColor" />{Number(item.averageRating).toFixed(1)} <span className="text-sm font-medium text-slate-500">({item.reviewCount || 0})</span></p></div>}</div>
         </div>

@@ -17,6 +17,8 @@ public record FieldResponse(
         String description,
         BigDecimal pricePerHour,
         String imageUrl,
+        String phone,
+        String mapLink,
         ActiveStatus status,
         FieldTypeResponse fieldType,
         OwnerSummary owner,

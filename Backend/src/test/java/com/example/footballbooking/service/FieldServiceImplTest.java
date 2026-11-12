@@ -72,7 +72,8 @@ class FieldServiceImplTest {
 
     private UpdateFieldRequest updateRequest() {
         return new UpdateFieldRequest(1L, "Sân A", "Hà Nội", "mô tả",
-                new BigDecimal("350000"), null, ActiveStatus.ACTIVE);
+                new BigDecimal("350000"), null, "0901234567",
+                "https://maps.google.com/?q=san-a", ActiveStatus.ACTIVE);
     }
 
     @Test

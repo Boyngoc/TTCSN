@@ -67,6 +67,8 @@ CREATE TABLE fields (
     description    VARCHAR(1000),
     price_per_hour DECIMAL(12,2) NOT NULL,
     image_url      VARCHAR(500),
+    phone          VARCHAR(20),
+    map_link       VARCHAR(1000),
     status         VARCHAR(20)   NOT NULL,
     created_at     DATETIME(6),
     updated_at     DATETIME(6),

@@ -27,6 +27,10 @@ public record CreateFieldRequest(
         @DecimalMin(value = "0.0", inclusive = false, message = "Giá thuê phải lớn hơn 0")
         BigDecimal pricePerHour,
 
-        String imageUrl
+        String imageUrl,
+
+        String phone,
+
+        String mapLink
 ) {
 }

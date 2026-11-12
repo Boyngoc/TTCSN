@@ -1,7 +1,8 @@
-import { CalendarDays, CircleUserRound, Menu, Shield, Trophy, X } from 'lucide-react'
+import { CircleUserRound, Menu, Shield, Trophy, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
+import Footer from '../components/Footer.jsx'
 
 function roleHome(role) {
   if (role === 'ADMIN') return '/quan-tri'
@@ -38,12 +39,7 @@ export default function SiteLayout() {
         </div>
       </header>
       <main className="min-h-[calc(100vh-220px)]"><Outlet /></main>
-      <footer className="mt-20 border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-9 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <div><p className="font-black text-slate-900">Sân Nhà</p><p className="mt-1 text-sm text-slate-500">Đặt sân nhanh, sẵn sàng cho trận đấu tiếp theo.</p></div>
-          <p className="flex items-center gap-2 text-sm text-slate-500"><CalendarDays size={16} />Đặt sân theo thời gian thực từ hệ thống</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

@@ -229,15 +229,25 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    private static final LocalTime PEAK_START = LocalTime.of(17, 0);
+    private static final LocalTime PEAK_END = LocalTime.of(21, 30);
+    private static final BigDecimal PEAK_PRICE_PER_HOUR = new BigDecimal("350000");
+
     /**
-     * Tính tổng tiền = giá theo giờ × số giờ thuê.
-     * Ví dụ: 300.000đ/giờ, đặt 18:00–20:00 → 600.000đ.
+     * Tính tổng tiền = đơn giá theo giờ × số giờ thuê.
+     * Khung giờ cao điểm từ 17:00 đến 21:30: áp dụng 350.000đ/giờ.
+     * Các khung giờ khác tính theo giá niêm yết của sân.
      */
     private BigDecimal calculateTotalPrice(BigDecimal pricePerHour, LocalTime start, LocalTime end) {
         long minutes = Duration.between(start, end).toMinutes();
         BigDecimal hours = BigDecimal.valueOf(minutes)
                 .divide(BigDecimal.valueOf(MINUTES_PER_HOUR), 4, RoundingMode.HALF_UP);
-        return pricePerHour.multiply(hours).setScale(0, RoundingMode.HALF_UP);
+
+        BigDecimal effectiveRate = (!start.isBefore(PEAK_START) && !end.isAfter(PEAK_END))
+                ? PEAK_PRICE_PER_HOUR
+                : pricePerHour;
+
+        return effectiveRate.multiply(hours).setScale(0, RoundingMode.HALF_UP);
     }
 
     private Booking findBookingOrThrow(Long bookingId) {

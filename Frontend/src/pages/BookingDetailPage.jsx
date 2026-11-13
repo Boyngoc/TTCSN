@@ -3,11 +3,12 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { EmptyState, ErrorMessage, Loading, Notice } from '../components/Feedback.jsx'
 import PageHeading from '../components/PageHeading.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 import { useAuth } from '../contexts/AuthContext.jsx'
 import { useBooking, useBookingAction } from '../hooks/useApi.js'
 import { bookingsApi } from '../services/api/resources.js'
 import { getErrorMessage } from '../services/api/client.js'
-import { formatDate, formatPrice, statusLabel } from '../utils/format.js'
+import { formatDate, formatPrice } from '../utils/format.js'
 
 export default function BookingDetailPage() {
   const { id } = useParams()
@@ -34,10 +35,10 @@ export default function BookingDetailPage() {
     <PageHeading eyebrow={`Chi tiết lượt đặt #${item.id}`} title={item.fieldName} description="Thông tin được tải từ booking API của backend." />
     {message && <div className="mb-5"><Notice>{message}</Notice></div>}
     {cancel.isError && <div className="mb-5"><ErrorMessage message={getErrorMessage(cancel.error)} /></div>}
-    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-5">
         <span className="text-sm font-bold text-slate-500">Đơn đặt sân #{item.id}</span>
-        <span className="rounded-full bg-pitch-50 px-3 py-1 text-xs font-bold text-pitch-700">{statusLabel(item.status)}</span>
+        <StatusBadge status={item.status} />
       </div>
       <dl className="mt-6 grid gap-5 sm:grid-cols-2">
         <div><dt className="flex items-center gap-2 text-sm font-semibold text-slate-500"><CalendarClock size={16} />Ngày và giờ</dt><dd className="mt-2 font-bold text-slate-900">{formatDate(item.bookingDate)} · {item.startTime}–{item.endTime}</dd></div>

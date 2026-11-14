@@ -52,7 +52,7 @@ public class DataSeeder implements CommandLineRunner {
         User admin = seedUser("admin@footballbooking.com", "Quản trị viên", "Admin@123", Role.ADMIN);
         User owner = seedUser("owner@footballbooking.com", "Chủ sân demo", "Owner@123", Role.OWNER);
         seedUser("user@footballbooking.com", "Người dùng demo", "User@123", Role.USER);
-        seedSampleField(owner);
+        // Đã xóa sân bóng Ngôi Sao mẫu, sử dụng danh sách 161 sân thực tế
         log.info("Đã khởi tạo dữ liệu mẫu (profile dev). Tài khoản admin: {}", admin.getEmail());
     }
 
@@ -83,25 +83,5 @@ public class DataSeeder implements CommandLineRunner {
             user.setStatus(UserStatus.ACTIVE);
             return userRepository.save(user);
         });
-    }
-
-    private void seedSampleField(User owner) {
-        // Chỉ tạo sân mẫu khi hệ thống chưa có sân nào
-        if (fieldRepository.count() > 0) {
-            return;
-        }
-        List<FieldType> types = fieldTypeRepository.findAll();
-        if (types.isEmpty()) {
-            return;
-        }
-        Field field = new Field();
-        field.setOwner(owner);
-        field.setFieldType(types.get(0));
-        field.setName("Sân bóng Ngôi Sao");
-        field.setAddress("123 Nguyễn Trãi, Hà Nội");
-        field.setDescription("Sân cỏ nhân tạo, có mái che và đèn chiếu sáng");
-        field.setPricePerHour(new BigDecimal("300000"));
-        field.setStatus(ActiveStatus.ACTIVE);
-        fieldRepository.save(field);
     }
 }

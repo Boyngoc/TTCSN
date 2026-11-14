@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Clock, MapPin, Star } from 'lucide-react'
+import { ArrowLeft, Check, Clock, ExternalLink, MapPin, Phone, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
@@ -72,18 +72,18 @@ export default function FieldDetailPage() {
     <Link to="/san" className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-pitch-700"><ArrowLeft size={16} />Quay lại danh sách sân</Link>
     <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_.85fr]">
       <div>
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-pitch-700 to-emerald-400 shadow-card">
+        <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#129953] via-[#0e8a4a] to-[#0a6336]">
           {item.imageUrl ? <img src={item.imageUrl} alt={item.name} className="h-[340px] w-full object-cover sm:h-[460px]" /> : <div className="pitch-lines grid h-[340px] place-items-center sm:h-[460px]"><span className="rounded-full border border-white/50 bg-white/10 px-6 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white">Sân Nhà</span></div>}
         </div>
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex flex-wrap items-center gap-3"><span className="rounded-full bg-pitch-50 px-3 py-1 text-xs font-bold text-pitch-700">{item.fieldType?.name || 'Sân bóng'}</span><span className={`rounded-full px-3 py-1 text-xs font-bold ${item.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{item.status === 'ACTIVE' ? 'Đang nhận đặt' : 'Tạm ngưng'}</span></div>
-          <h1 className="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">{item.name}</h1><p className="mt-3 flex items-center gap-2 text-slate-500"><MapPin size={18} />{item.address}</p>
-          <p className="mt-5 whitespace-pre-line leading-7 text-slate-600">{item.description || 'Chủ sân chưa bổ sung mô tả cho sân này.'}</p>
-          <div className="mt-6 flex flex-wrap gap-6 border-y border-slate-200 py-5"><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Giá thuê theo giờ</p><p className="mt-1 text-2xl font-black text-pitch-700">{formatPrice(item.pricePerHour)}</p></div>{item.averageRating != null && <div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Đánh giá</p><p className="mt-1 flex items-center gap-1 text-xl font-black text-amber-600"><Star size={18} fill="currentColor" />{Number(item.averageRating).toFixed(1)} <span className="text-sm font-medium text-slate-500">({item.reviewCount || 0})</span></p></div>}</div>
+        <div className="mt-7"><div className="flex flex-wrap items-center gap-3"><span className="rounded-full bg-pitch-50 px-3 py-1 text-xs font-bold text-pitch-700 dark:bg-pitch-950/70 dark:text-pitch-300">{item.fieldType?.name || 'Sân bóng'}</span><span className={`rounded-full px-3 py-1 text-xs font-bold ${item.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>{item.status === 'ACTIVE' ? 'Đang nhận đặt' : 'Tạm ngưng'}</span></div>
+          <h1 className="mt-4 text-3xl font-black text-slate-950 dark:text-white sm:text-4xl">{item.name}</h1><div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-slate-500 dark:text-slate-400"><p className="flex items-center gap-2"><MapPin size={18} />{item.address}</p>{item.phone && <a href={`tel:${item.phone}`} className="flex items-center gap-2 font-semibold text-pitch-600 hover:underline dark:text-pitch-400"><Phone size={16} />{item.phone}</a>}{item.mapLink?.startsWith('http') && <a href={item.mapLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 font-semibold text-pitch-600 hover:underline dark:text-pitch-400"><ExternalLink size={16} />Xem trên bản đồ</a>}</div>
+          <p className="mt-5 whitespace-pre-line leading-7 text-slate-600 dark:text-slate-300">{item.description || 'Chủ sân chưa bổ sung mô tả cho sân này.'}</p>
+          <div className="mt-6 flex flex-wrap gap-6 border-y border-slate-200 py-5 dark:border-slate-800"><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Giá thuê theo giờ</p><p className="mt-1 text-2xl font-black text-pitch-600 dark:text-pitch-400">{formatPrice(item.pricePerHour)}</p></div>{item.averageRating != null && <div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Đánh giá</p><p className="mt-1 flex items-center gap-1 text-xl font-black text-amber-500"><Star size={18} fill="currentColor" />{Number(item.averageRating).toFixed(1)} <span className="text-sm font-medium text-slate-500 dark:text-slate-400">({item.reviewCount || 0})</span></p></div>}</div>
         </div>
-        <section className="mt-10"><div className="mb-4"><p className="eyebrow">Cộng đồng người chơi</p><h2 className="mt-1 text-xl font-extrabold text-slate-900">Đánh giá từ người chơi</h2></div>{reviews.isLoading ? <Loading /> : reviews.isError ? <div className="mt-4"><ErrorMessage message={getErrorMessage(reviews.error, 'Không tải được đánh giá.')} onRetry={reviews.refetch} /></div> : reviews.data?.content?.length ? <div className="space-y-3">{reviews.data.content.map((review) => <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex justify-between gap-3"><p className="font-bold text-slate-900">{review.userFullName}</p><span className="flex items-center gap-1 text-sm font-bold text-amber-700"><Star size={14} fill="currentColor" />{review.rating}/5</span></div>{review.comment && <p className="mt-2 text-sm leading-6 text-slate-600">{review.comment}</p>}<p className="mt-3 text-xs text-slate-400">{formatDate(review.createdAt?.slice(0, 10))}</p></article>)}</div> : <div className="mt-4"><EmptyState title="Sân chưa có đánh giá" /></div>}</section>
+        <section className="mt-10"><h2 className="text-xl font-black text-slate-900 dark:text-white">Đánh giá từ người chơi</h2>{reviews.isLoading ? <Loading /> : reviews.isError ? <div className="mt-4"><ErrorMessage message={getErrorMessage(reviews.error, 'Không tải được đánh giá.')} onRetry={reviews.refetch} /></div> : reviews.data?.content?.length ? <div className="mt-4 space-y-3">{reviews.data.content.map((review) => <article key={review.id} className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"><div className="flex justify-between gap-3"><p className="font-bold text-slate-900 dark:text-white">{review.userFullName}</p><span className="flex items-center gap-1 text-sm font-bold text-amber-500"><Star size={14} fill="currentColor" />{review.rating}/5</span></div>{review.comment && <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{review.comment}</p>}<p className="mt-3 text-xs text-slate-400">{formatDate(review.createdAt?.slice(0, 10))}</p></article>)}</div> : <div className="mt-4"><EmptyState title="Sân chưa có đánh giá" /></div>}</section>
       </div>
-      <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card lg:sticky lg:top-24 sm:p-6">
-        <p className="eyebrow">Đặt lịch sân</p><h2 className="mt-2 text-2xl font-black text-slate-950">Chọn ca thi đấu</h2><p className="mt-2 text-sm leading-6 text-slate-500">Đặt sân theo ca cố định (90 phút/ca). Giá tạm tính sẽ theo số giờ thực tế.</p>
+      <aside className="sticky top-24 rounded-3xl border border-slate-200 bg-white p-6 shadow-card dark:border-slate-800 dark:bg-slate-900">
+        <p className="eyebrow">Đặt lịch sân</p><h2 className="mt-2 text-2xl font-black text-slate-950 dark:text-white">Chọn ca thi đấu</h2><p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">Đặt sân theo ca cố định (90 phút/ca). Giá tạm tính sẽ theo số giờ thực tế.</p>
         {success && <div className="mt-5"><Notice>Đã gửi yêu cầu đặt sân #{success.id}. Tổng tiền: <strong>{formatPrice(success.totalPrice)}</strong> ({success.startTime?.slice(0, 5)} - {success.endTime?.slice(0, 5)}) · Trạng thái: {success.status}</Notice></div>}
         {createBooking.isError && <div className="mt-5"><ErrorMessage message={getErrorMessage(createBooking.error)} /></div>}
         {canBook ? <form onSubmit={submitBooking} className="mt-6 space-y-5">
@@ -120,14 +120,14 @@ export default function FieldDetailPage() {
                     type="button"
                     disabled={isPast}
                     onClick={() => setBooking({ ...booking, startTime: slot.start, endTime: slot.end })}
-                    className={`relative flex flex-col items-center justify-center rounded-2xl border p-3 text-center transition-all ${
+                    className={`relative flex flex-col items-center justify-center rounded-2xl border p-3 text-center transition-all cursor-pointer ${
                       isSelected
-                        ? 'border-pitch-600 bg-pitch-50 text-pitch-900 ring-2 ring-pitch-600 shadow-sm'
+                        ? 'border-pitch-600 bg-pitch-50 text-pitch-900 ring-2 ring-pitch-600 shadow-sm dark:bg-pitch-950/70 dark:text-pitch-200 dark:ring-pitch-500'
                         : isPast
-                        ? 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400 opacity-50'
+                        ? 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400 opacity-50 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-600'
                         : isPeak
-                        ? 'border-amber-200 bg-amber-50/30 hover:border-amber-400 hover:bg-amber-50/60 text-slate-800'
-                        : 'border-slate-200 bg-white hover:border-pitch-300 hover:bg-slate-50 text-slate-700'
+                        ? 'border-amber-200 bg-amber-50/40 hover:border-amber-400 hover:bg-amber-50/70 text-slate-800 dark:border-amber-800/60 dark:bg-amber-950/20 dark:text-amber-200'
+                        : 'border-slate-200 bg-white hover:border-pitch-300 hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-pitch-500 dark:hover:bg-slate-700/60'
                     }`}
                   >
                     {isSelected && (
@@ -135,19 +135,19 @@ export default function FieldDetailPage() {
                         <Check size={11} strokeWidth={3} />
                       </span>
                     )}
-                    <span className="text-[11px] font-semibold text-slate-500">{slot.label}</span>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{slot.label}</span>
                     <span className="text-sm font-black tracking-tight">{slot.start} - {slot.end}</span>
-                    <span className="mt-0.5 text-[11px] font-bold text-pitch-700">{formatPrice(slotPrice)}</span>
+                    <span className="mt-0.5 text-[11px] font-bold text-pitch-600 dark:text-pitch-400">{formatPrice(slotPrice)}</span>
                     {isPeak ? (
-                      <span className="mt-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800">
+                      <span className="mt-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
                         17h-21h30 (350k/h)
                       </span>
                     ) : (
-                      <span className="mt-0.5 text-[10px] text-slate-400">
+                      <span className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">
                         {formatPrice(item.pricePerHour)}/h
                       </span>
                     )}
-                    {isPast && <span className="mt-0.5 text-[10px] text-slate-400">Đã qua giờ</span>}
+                    {isPast && <span className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">Đã qua giờ</span>}
                   </button>
                 )
               })}
@@ -161,25 +161,25 @@ export default function FieldDetailPage() {
               const currentRate = isPeakSelected ? PEAK_PRICE_PER_HOUR : Number(item.pricePerHour || 0)
               const currentTotal = Math.round(currentRate * 1.5)
               return (
-                <div className="rounded-2xl border border-pitch-200 bg-pitch-50/70 p-3.5 text-xs text-pitch-900 flex items-center justify-between">
+                <div className="rounded-2xl border border-pitch-200 bg-pitch-50/70 p-3.5 text-xs text-pitch-900 dark:border-pitch-800 dark:bg-pitch-950/40 dark:text-pitch-200 flex items-center justify-between">
                   <div>
                     <p className="font-bold flex items-center gap-1.5">
                       <Clock size={14} /> Ca: {booking.startTime} – {booking.endTime} (90 phút)
                     </p>
-                    <p className="text-[11px] text-pitch-700 mt-1">
-                      Đơn giá: <strong>{formatPrice(currentRate)}/giờ</strong> {isPeakSelected && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 font-bold text-amber-800 ml-1">17h00 - 21h30</span>}
+                    <p className="text-[11px] text-pitch-700 dark:text-pitch-300 mt-1">
+                      Đơn giá: <strong>{formatPrice(currentRate)}/giờ</strong> {isPeakSelected && <span className="rounded-full bg-amber-100 dark:bg-amber-900/60 dark:text-amber-200 px-1.5 py-0.5 font-bold text-amber-800 ml-1">17h00 - 21h30</span>}
                     </p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Ngày: {formatDate(booking.bookingDate)}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Ngày: {formatDate(booking.bookingDate)}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[11px] text-slate-500 block">Thành tiền (1.5h)</span>
-                    <span className="text-lg font-black text-pitch-800">{formatPrice(currentTotal)}</span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Thành tiền (1.5h)</span>
+                    <span className="text-lg font-black text-pitch-600 dark:text-pitch-400">{formatPrice(currentTotal)}</span>
                   </div>
                 </div>
               )
             })()
           ) : (
-            <div className="rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500">
+            <div className="rounded-xl bg-slate-50 p-3 text-center text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
               Vui lòng bấm chọn một ca giờ ở trên để đặt sân.
             </div>
           )}

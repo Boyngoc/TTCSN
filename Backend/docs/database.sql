@@ -67,6 +67,8 @@ CREATE TABLE fields (
     description    VARCHAR(1000),
     price_per_hour DECIMAL(12,2) NOT NULL,
     image_url      VARCHAR(500),
+    phone          VARCHAR(20),
+    map_link       VARCHAR(1000),
     status         VARCHAR(20)   NOT NULL,
     created_at     DATETIME(6),
     updated_at     DATETIME(6),
@@ -151,20 +153,10 @@ INSERT INTO field_types (name, description, status) VALUES
     ('Sân 7 người',  'Sân bóng đá 7 người',               'ACTIVE'),
     ('Sân 11 người', 'Sân bóng đá 11 người tiêu chuẩn',   'ACTIVE');
 
+-- Thời gian ghi bằng UTC_TIMESTAMP() vì backend lưu/đọc thời gian theo UTC (serverTimezone=UTC).
 INSERT INTO users (full_name, email, password, phone, role, status, created_at, updated_at) VALUES
-    ('Quản trị viên', 'admin@footballbooking.com', '$2a$10$IFhC8zAz2ZKxbOCsJDRymOiIHiBZct5D2LtEunxfjL/.WHxdoSANi', '0900000000', 'ADMIN', 'ACTIVE', NOW(6), NOW(6)),
-    ('Chủ sân demo',  'owner@footballbooking.com', '$2a$10$FqnVCy8.6Z1lAuIM2Gbw2uZn/FRlqXTHHS6R9SPCsRqfqdqtf6dgW', '0900000000', 'OWNER', 'ACTIVE', NOW(6), NOW(6)),
-    ('Người dùng demo','user@footballbooking.com', '$2a$10$yGvPkv2ZV4PxOa6EC3g9H.s4A2HWFkvZLkUDudI/Bj3Wv5GVe/tqS', '0900000000', 'USER',  'ACTIVE', NOW(6), NOW(6));
+    ('Quản trị viên', 'admin@footballbooking.com', '$2a$10$IFhC8zAz2ZKxbOCsJDRymOiIHiBZct5D2LtEunxfjL/.WHxdoSANi', '0900000000', 'ADMIN', 'ACTIVE', UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)),
+    ('Chủ sân demo',  'owner@footballbooking.com', '$2a$10$FqnVCy8.6Z1lAuIM2Gbw2uZn/FRlqXTHHS6R9SPCsRqfqdqtf6dgW', '0900000000', 'OWNER', 'ACTIVE', UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)),
+    ('Người dùng demo','user@footballbooking.com', '$2a$10$yGvPkv2ZV4PxOa6EC3g9H.s4A2HWFkvZLkUDudI/Bj3Wv5GVe/tqS', '0900000000', 'USER',  'ACTIVE', UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
 
--- Sân mẫu thuộc chủ sân demo, loại "Sân 7 người" (dùng INSERT..SELECT để lấy đúng khóa ngoại)
-INSERT INTO fields (owner_id, field_type_id, name, address, description, price_per_hour, status, created_at, updated_at)
-SELECT u.id, ft.id,
-       'Sân bóng Ngôi Sao',
-       '123 Nguyễn Trãi, Hà Nội',
-       'Sân cỏ nhân tạo, có mái che và đèn chiếu sáng',
-       300000.00,
-       'ACTIVE',
-       NOW(6), NOW(6)
-FROM users u
-JOIN field_types ft ON ft.name = 'Sân 7 người'
-WHERE u.email = 'owner@footballbooking.com';
+-- Dữ liệu sân bóng và chủ sân thực tế được import từ docs/import_scanned_fields.sql (161 sân).

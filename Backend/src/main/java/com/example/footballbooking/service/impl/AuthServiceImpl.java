@@ -57,7 +57,8 @@ public class AuthServiceImpl implements AuthService {
         // Luôn mã hóa mật khẩu bằng BCrypt trước khi lưu, không lưu plaintext
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setPhone(request.phone());
-        user.setRole(Role.USER);
+        Role assignedRole = (request.role() == Role.OWNER) ? Role.OWNER : Role.USER;
+        user.setRole(assignedRole);
         user.setStatus(UserStatus.ACTIVE);
 
         return UserMapper.toResponse(userRepository.save(user));

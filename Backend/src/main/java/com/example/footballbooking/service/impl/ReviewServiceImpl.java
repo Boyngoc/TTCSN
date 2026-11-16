@@ -78,4 +78,11 @@ public class ReviewServiceImpl implements ReviewService {
         Page<Review> page = reviewRepository.findByFieldIdOrderByCreatedAtDesc(fieldId, pageable);
         return PageResponse.from(page, ReviewMapper::toResponse);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<ReviewResponse> getOwnerReviews(Long ownerId, Long fieldId, Integer rating, Pageable pageable) {
+        Page<Review> page = reviewRepository.findByOwnerIdAndFilters(ownerId, fieldId, rating, pageable);
+        return PageResponse.from(page, ReviewMapper::toResponse);
+    }
 }

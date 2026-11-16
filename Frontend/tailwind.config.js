@@ -6,20 +6,21 @@ export default {
     extend: {
       colors: {
         pitch: {
-          50: '#edf9f1',
-          100: '#d5f3e0',
-          200: '#ace6c4',
-          300: '#73d49f',
-          400: '#3cbe7a',
-          500: '#1da15f',
-          600: '#0e8a4a', // Màu xanh sân cỏ tươi sáng chuẩn theo thiết kế mới
-          700: '#0c723d',
-          800: '#0b5c32',
-          900: '#084827',
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac', // Xanh lá cây nhạt tươi tắn
+          400: '#4ade80', // Xanh lá sáng nổi bật
+          500: '#22c55e', // Xanh thể thao năng động
+          600: '#16a34a', // Xanh chính cho nút bấm và tiêu đề
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+          950: '#052e16',
         },
       },
       boxShadow: {
-        card: '0 16px 48px rgba(14, 138, 74, 0.08)',
+        card: '0 16px 48px rgba(34, 197, 94, 0.09)',
       },
     },
   },

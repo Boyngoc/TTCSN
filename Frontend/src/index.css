@@ -10,8 +10,19 @@
   text-rendering: optimizeLegibility;
 }
 
+html.dark {
+  color-scheme: dark;
+  color: #f1f5f9;
+  background-color: #0b1120;
+}
+
+html.dark body {
+  background-color: #0b1120;
+  color: #f1f5f9;
+}
+
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; min-height: 100vh; }
+body { margin: 0; min-width: 320px; min-height: 100vh; transition: background-color 0.2s ease, color 0.2s ease; }
 button, input, select, textarea { font: inherit; }
 button:disabled { cursor: not-allowed; opacity: .55; }
 a { text-decoration: none; }
@@ -22,15 +33,48 @@ a { text-decoration: none; }
   .section-title { @apply mt-2 text-3xl font-black tracking-tight text-slate-950; }
   .field-label { @apply flex flex-col gap-2 text-sm font-bold text-slate-700; }
   .input-control { @apply min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-pitch-500 focus:ring-4 focus:ring-pitch-100; }
-  .btn-primary { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-pitch-700 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-pitch-900 disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-secondary { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-pitch-300 hover:bg-pitch-50 hover:text-pitch-700 disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-danger { @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-lime { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-lime-300 px-5 py-3 text-sm font-black text-pitch-900 transition hover:bg-lime-200; }
+  .btn-primary { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-pitch-600 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-pitch-600/25 transition hover:bg-pitch-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-secondary { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-pitch-300 hover:bg-pitch-50 hover:text-pitch-700 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-danger { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-lime { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-lime-400 px-5 py-3 text-sm font-black text-slate-950 shadow-md shadow-lime-400/20 transition hover:bg-lime-300; }
   .btn-outline-light { @apply inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10; }
+
+  /* Dark mode overrides */
+  html.dark .eyebrow { color: #3cbe7a; }
+  html.dark .section-title { color: #ffffff; }
+  html.dark .field-label { color: #cbd5e1; }
+  html.dark .input-control {
+    border-color: #334155;
+    background-color: #0f172a;
+    color: #f1f5f9;
+  }
+  html.dark .input-control::placeholder {
+    color: #64748b;
+  }
+  html.dark .btn-secondary {
+    border-color: #334155;
+    background-color: #1e293b;
+    color: #e2e8f0;
+  }
+  html.dark .btn-secondary:hover {
+    border-color: #0e8a4a;
+    background-color: #334155;
+  }
+  html.dark .btn-danger {
+    border-color: #991b1b;
+    background-color: #0f172a;
+    color: #f87171;
+  }
+  html.dark .btn-danger:hover {
+    background-color: rgba(69, 10, 10, 0.4);
+  }
 }
 
-.hero-grid { background-image: radial-gradient(circle at 75% 20%, rgba(163, 230, 53, .14), transparent 32%), linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px); background-size: auto, 38px 38px, 38px 38px; }
-.pitch-lines { background-image: linear-gradient(rgba(255,255,255,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.09) 1px, transparent 1px); background-size: 32px 32px; }
+.hero-grid { background-image: radial-gradient(circle at 75% 20%, rgba(255, 255, 255, .15), transparent 35%), linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: auto, 36px 36px, 36px 36px; }
+.pitch-lines { background-image: linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px); background-size: 32px 32px; }
+.pitch-panel {
+  background: radial-gradient(circle at 30% 20%, #15a359 0%, #0e8a4a 50%, #0c723d 100%);
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }

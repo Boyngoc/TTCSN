@@ -26,8 +26,8 @@ export default function FieldsPage() {
 
   return <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
     <PageHeading eyebrow="Danh sách sân" title="Tìm sân phù hợp" description="Lọc sân theo thông tin thực tế từ hệ thống. Giá được hiển thị theo từng sân." />
-    <form onSubmit={submit} className="mb-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-      <div className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-700"><SlidersHorizontal size={17} className="text-pitch-600" />Bộ lọc sân bóng</div>
+    <form onSubmit={submit} className="mb-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200"><SlidersHorizontal size={17} className="text-pitch-600 dark:text-pitch-400" />Bộ lọc sân bóng</div>
       {types.isError && <p className="mb-3 text-sm text-red-700">Không tải được danh mục loại sân: {types.error?.response?.data?.message || 'hãy thử tải lại trang.'}</p>}
       {filterError && <p className="mb-3 text-sm text-red-700">{filterError}</p>}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">

@@ -18,7 +18,7 @@ const tabs = [
 ]
 
 function SummaryCard({ icon: Icon, label, value, detail }) {
-  return <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-pitch-50 text-pitch-700"><Icon size={20} /></span><p className="mt-5 text-sm font-semibold text-slate-500">{label}</p><p className="mt-1 text-3xl font-black tracking-tight text-slate-950">{value ?? '—'}</p>{detail && <p className="mt-2 text-xs text-slate-400">{detail}</p>}</article>
+  return <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-pitch-50 text-pitch-600 dark:bg-pitch-950/70 dark:text-pitch-300"><Icon size={20} /></span><p className="mt-5 text-sm font-semibold text-slate-500 dark:text-slate-400">{label}</p><p className="mt-1 text-3xl font-black tracking-tight text-slate-950 dark:text-white">{value ?? '—'}</p>{detail && <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">{detail}</p>}</article>
 }
 
 function Result({ query, children, empty }) {
@@ -44,7 +44,7 @@ export default function AdminPage() {
 
   return <div className="page-wrap">
     <PageHeading eyebrow="Khu vực quản trị" title="Tổng quan hệ thống" description="Số liệu và danh sách được truy xuất từ API quản trị backend." />
-    <div className="mb-7 flex flex-wrap gap-2">{tabs.map(([key, label, Icon]) => <button key={key} onClick={() => navigateTab(key)} className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${tab === key ? 'bg-pitch-700 text-white' : 'bg-white text-slate-600'}`}><Icon size={16} />{label}</button>)}</div>
+    <div className="mb-7 flex flex-wrap gap-2">{tabs.map(([key, label, Icon]) => <button key={key} onClick={() => navigateTab(key)} className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition ${tab === key ? 'bg-pitch-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}><Icon size={16} />{label}</button>)}</div>
     {error && <div className="mb-5"><ErrorMessage message={error} /></div>}
     {tab === 'overview' && (statistics.isLoading ? <Loading /> : statistics.isError ? <ErrorMessage message={getErrorMessage(statistics.error)} onRetry={statistics.refetch} /> : <>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -54,8 +54,8 @@ export default function AdminPage() {
         <SummaryCard icon={CalendarDays} label="Lượt đặt" value={data.totalBookings} />
       </div>
       <section className="mt-6 grid gap-5 lg:grid-cols-[.7fr_1.3fr]">
-        <article className="rounded-3xl bg-pitch-900 p-6 text-white"><CircleDollarSign className="text-lime-300" size={24} /><p className="mt-5 text-sm font-semibold text-emerald-100/70">Doanh thu thống kê</p><p className="mt-2 text-3xl font-black">{formatPrice(data.totalRevenue)}</p><p className="mt-3 text-xs leading-5 text-emerald-100/60">Theo quy tắc backend: booking CONFIRMED và COMPLETED.</p></article>
-        <article className="rounded-3xl border border-slate-200 bg-white p-6"><div className="flex items-center gap-2"><Activity size={19} className="text-pitch-600" /><h2 className="font-black text-slate-900">Booking theo trạng thái</h2></div><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{Object.entries(data.bookingsByStatus || {}).map(([status, count]) => <div key={status} className="rounded-2xl bg-slate-50 p-4"><p className="text-xs font-semibold text-slate-500">{statusLabel(status)}</p><p className="mt-1 text-2xl font-black text-slate-900">{count}</p></div>)}</div></article>
+        <article className="pitch-panel pitch-lines rounded-3xl p-6 text-white shadow-lg shadow-pitch-900/10"><CircleDollarSign className="text-lime-300" size={24} /><p className="mt-5 text-sm font-semibold text-emerald-100/90">Doanh thu thống kê</p><p className="mt-2 text-3xl font-black">{formatPrice(data.totalRevenue)}</p><p className="mt-3 text-xs leading-5 text-emerald-100/75">Theo quy tắc backend: booking CONFIRMED và COMPLETED.</p></article>
+        <article className="rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"><div className="flex items-center gap-2"><Activity size={19} className="text-pitch-600 dark:text-pitch-400" /><h2 className="font-black text-slate-900 dark:text-white">Booking theo trạng thái</h2></div><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{Object.entries(data.bookingsByStatus || {}).map(([status, count]) => <div key={status} className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/80"><p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{statusLabel(status)}</p><p className="mt-1 text-2xl font-black text-slate-900 dark:text-white">{count}</p></div>)}</div></article>
       </section>
     </>)}
     {tab === 'users' && <section className="rounded-3xl border border-slate-200 bg-white p-5"><h2 className="mb-4 text-lg font-black">Tài khoản người chơi</h2><Result query={users} empty="Chưa có người chơi"><Rows rows={users.data?.content} kind="user" action={(person) => {

@@ -1,5 +1,6 @@
 package com.example.footballbooking.dto.auth;
 
+import com.example.footballbooking.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -22,6 +23,11 @@ public record RegisterRequest(
         String password,
 
         @Pattern(regexp = "^(0\\d{9})?$", message = "Số điện thoại phải gồm 10 chữ số bắt đầu bằng 0")
-        String phone
+        String phone,
+
+        Role role
 ) {
+    public RegisterRequest(String fullName, String email, String password, String phone) {
+        this(fullName, email, password, phone, Role.USER);
+    }
 }

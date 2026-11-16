@@ -24,4 +24,21 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     /** Số lượng đánh giá của một sân. */
     long countByFieldId(Long fieldId);
+
+    /**
+     * Lấy danh sách đánh giá của các sân thuộc về một chủ sân (OWNER), có thể lọc theo fieldId và số sao.
+     */
+    @Query(value = "SELECT r FROM Review r JOIN FETCH r.user u JOIN FETCH r.field f " +
+            "WHERE f.owner.id = :ownerId " +
+            "  AND (:fieldId IS NULL OR f.id = :fieldId) " +
+            "  AND (:rating IS NULL OR r.rating = :rating) " +
+            "ORDER BY r.createdAt DESC",
+            countQuery = "SELECT COUNT(r) FROM Review r JOIN r.field f " +
+            "WHERE f.owner.id = :ownerId " +
+            "  AND (:fieldId IS NULL OR f.id = :fieldId) " +
+            "  AND (:rating IS NULL OR r.rating = :rating)")
+    Page<Review> findByOwnerIdAndFilters(@Param("ownerId") Long ownerId,
+                                         @Param("fieldId") Long fieldId,
+                                         @Param("rating") Integer rating,
+                                         Pageable pageable);
 }

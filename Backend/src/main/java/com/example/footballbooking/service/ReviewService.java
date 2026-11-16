@@ -15,4 +15,7 @@ public interface ReviewService {
 
     /** Danh sách đánh giá của một sân, có phân trang. */
     PageResponse<ReviewResponse> getFieldReviews(Long fieldId, Pageable pageable);
+
+    /** Danh sách đánh giá của các sân thuộc chủ sân (OWNER), có thể lọc theo fieldId và số sao. */
+    PageResponse<ReviewResponse> getOwnerReviews(Long ownerId, Long fieldId, Integer rating, Pageable pageable);
 }

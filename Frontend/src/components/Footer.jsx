@@ -13,7 +13,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="mt-20 border-t border-slate-200 bg-slate-50 text-slate-600 transition-colors duration-200 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+    <footer className="mt-0 border-t border-slate-200/90 bg-slate-50 text-slate-600 transition-colors duration-200 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
       
       {/* Top Banner / Feature Highlights */}
       <div className="border-b border-slate-200/80 bg-white py-6 transition-colors duration-200 dark:border-slate-800/80 dark:bg-slate-900/60">
